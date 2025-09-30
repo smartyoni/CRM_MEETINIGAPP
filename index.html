@@ -1705,6 +1705,9 @@
                     y: e.pageY
                 });
                 setContextMenuCustomer(customer);
+                // 컨텍스트 메뉴가 열릴 때 모달들은 닫혀있어야 함
+                setShowActivityModal(false);
+                setShowMeetingModal(false);
             };
 
             const handleCloseContextMenu = () => {
@@ -2079,7 +2082,7 @@
                     />
                 )}
 
-                {showActivityModal && contextMenuCustomer && (
+                {showActivityModal && (
                     <ActivityModal
                         customer={contextMenuCustomer}
                         onSave={(activityData) => {
@@ -2094,7 +2097,7 @@
                     />
                 )}
 
-                {showMeetingModal && contextMenuCustomer && (
+                {showMeetingModal && (
                     <MeetingModal
                         customer={contextMenuCustomer}
                         onSave={(meetingData) => {
