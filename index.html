@@ -545,6 +545,34 @@
             color: #e74c3c;
         }
 
+        /* Meeting Context Menu */
+        .meeting-context-menu {
+            position: fixed;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            min-width: 160px;
+            padding: 4px 0;
+        }
+
+        .meeting-context-menu-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .meeting-context-menu-item:hover {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+
         /* Meeting Detail Modal */
         .meeting-detail-content .detail-field {
             margin-bottom: 20px;
@@ -593,6 +621,151 @@
         .completed-text {
             text-decoration: line-through;
             opacity: 0.6;
+        }
+
+        /* Property Preparation Modal */
+        .property-prep-content {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .property-list {
+            margin-bottom: 20px;
+        }
+
+        .property-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            position: relative;
+        }
+
+        .property-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .property-item-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .property-item-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .property-item-controls button {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .property-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .property-status.확인전 {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .property-status.확인중 {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .property-status.볼수있음 {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .property-status.오늘못봄 {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .property-status.계약됨 {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
+        .property-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .property-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .property-field label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+
+        .property-field .value {
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .property-info-full {
+            grid-column: 1 / -1;
+        }
+
+        .add-property-btn {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #6c757d;
+            background-color: transparent;
+            color: #6c757d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .add-property-btn:hover {
+            border-color: #3498db;
+            color: #3498db;
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        /* Meeting Context Menu */
+        .meeting-context-menu {
+            position: fixed;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10001;
+            min-width: 140px;
+            padding: 4px 0;
+        }
+
+        .meeting-context-menu-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+
+        .meeting-context-menu-item:hover {
+            background-color: #f8f9fa;
+            color: #2c3e50;
         }
 
         /* Table */
@@ -1106,7 +1279,8 @@
                     ...meeting,
                     id: generateId(),
                     createdAt: new Date().toISOString(),
-                    checklist: meeting.checklist || []
+                    checklist: meeting.checklist || [],
+                    properties: meeting.properties || []
                 };
                 setMeetings([...meetings, newMeeting]);
                 return newMeeting;
@@ -1194,6 +1368,7 @@
                                 onAddMeeting={addMeeting}
                                 onUpdateActivity={updateActivity}
                                 onDeleteActivity={deleteActivity}
+                                onUpdateMeeting={updateMeeting}
                             />
                         )}
                         {currentPage === 'meetings' && (
@@ -1761,6 +1936,266 @@
             );
         }
 
+        // Property Preparation Modal Component
+        function PropertyPrepModal({ meeting, onSave, onClose }) {
+            const [properties, setProperties] = useState(meeting?.properties || []);
+            const [showAddForm, setShowAddForm] = useState(false);
+            const [editingProperty, setEditingProperty] = useState(null);
+
+            if (!meeting) {
+                return null;
+            }
+
+            const formatPhoneNumber = (value) => {
+                const numbers = value.replace(/[^\d]/g, '');
+                if (numbers.length === 11 && numbers.startsWith('010')) {
+                    return numbers.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                } else if (numbers.length === 10) {
+                    if (numbers.startsWith('02')) {
+                        return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+                    } else {
+                        return numbers.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+                    }
+                } else if (numbers.length === 9 && numbers.startsWith('02')) {
+                    return numbers.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+                }
+                return value;
+            };
+
+            const handleSave = () => {
+                onSave({
+                    ...meeting,
+                    properties: properties
+                });
+            };
+
+            const handleAddProperty = (propertyData) => {
+                const newProperty = {
+                    ...propertyData,
+                    id: Date.now().toString()
+                };
+                setProperties([...properties, newProperty]);
+                setShowAddForm(false);
+            };
+
+            const handleUpdateProperty = (propertyData) => {
+                setProperties(properties.map(p =>
+                    p.id === propertyData.id ? propertyData : p
+                ));
+                setEditingProperty(null);
+            };
+
+            const handleDeleteProperty = (propertyId) => {
+                if (window.confirm('이 매물을 삭제하시겠습니까?')) {
+                    setProperties(properties.filter(p => p.id !== propertyId));
+                }
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+                        <div className="modal-header">
+                            <h3>미팅 매물 준비 - {meeting.title}</h3>
+                            <button className="modal-close-btn" onClick={onClose}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="property-prep-content">
+                                <div className="property-list">
+                                    {properties.length === 0 ? (
+                                        <p style={{ textAlign: 'center', color: '#6c757d', margin: '20px 0' }}>
+                                            준비된 매물이 없습니다.
+                                        </p>
+                                    ) : (
+                                        properties.map((property, index) => (
+                                            <PropertyItem
+                                                key={property.id}
+                                                property={property}
+                                                index={index}
+                                                onEdit={() => setEditingProperty(property)}
+                                                onDelete={() => handleDeleteProperty(property.id)}
+                                                formatPhoneNumber={formatPhoneNumber}
+                                            />
+                                        ))
+                                    )}
+                                </div>
+
+                                <button className="add-property-btn" onClick={() => setShowAddForm(true)}>
+                                    + 매물 추가
+                                </button>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>취소</button>
+                            <button type="button" className="btn btn-primary" onClick={handleSave}>저장</button>
+                        </div>
+
+                        {showAddForm && (
+                            <PropertyForm
+                                onSave={handleAddProperty}
+                                onClose={() => setShowAddForm(false)}
+                                formatPhoneNumber={formatPhoneNumber}
+                            />
+                        )}
+
+                        {editingProperty && (
+                            <PropertyForm
+                                property={editingProperty}
+                                onSave={handleUpdateProperty}
+                                onClose={() => setEditingProperty(null)}
+                                formatPhoneNumber={formatPhoneNumber}
+                            />
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Property Item Component
+        function PropertyItem({ property, index, onEdit, onDelete, formatPhoneNumber }) {
+            return (
+                <div className="property-item">
+                    <div className="property-item-header">
+                        <div className="property-item-title">매물 #{index + 1}</div>
+                        <div className="property-item-controls">
+                            <span className={`property-status ${property.status}`}>
+                                {property.status}
+                            </span>
+                            <button className="btn btn-primary btn-small" onClick={onEdit}>수정</button>
+                            <button className="btn btn-danger btn-small" onClick={onDelete}>삭제</button>
+                        </div>
+                    </div>
+                    <div className="property-fields">
+                        <div className="property-field">
+                            <label>방문시간</label>
+                            <div className="value">{property.visitTime}</div>
+                        </div>
+                        <div className="property-field">
+                            <label>부동산</label>
+                            <div className="value">{property.realEstate}</div>
+                        </div>
+                        <div className="property-field">
+                            <label>연락처</label>
+                            <div className="value">{formatPhoneNumber(property.contact)}</div>
+                        </div>
+                        <div className="property-field property-info-full">
+                            <label>매물정보</label>
+                            <div className="value" style={{ whiteSpace: 'pre-wrap' }}>{property.propertyInfo}</div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Property Form Component
+        function PropertyForm({ property, onSave, onClose, formatPhoneNumber }) {
+            const [formData, setFormData] = useState({
+                visitTime: property?.visitTime || '',
+                status: property?.status || '확인전',
+                propertyInfo: property?.propertyInfo || '',
+                realEstate: property?.realEstate || '',
+                contact: property?.contact || ''
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSave({
+                    ...property,
+                    ...formData
+                });
+            };
+
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                let formattedValue = value;
+
+                if (name === 'contact') {
+                    formattedValue = formatPhoneNumber(value);
+                }
+
+                setFormData({
+                    ...formData,
+                    [name]: formattedValue
+                });
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>{property ? '매물 수정' : '매물 추가'}</h3>
+                            <button className="modal-close-btn" onClick={onClose}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <form id="property-form" onSubmit={handleSubmit}>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>방문시간 *</label>
+                                        <input
+                                            type="time"
+                                            name="visitTime"
+                                            value={formData.visitTime}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>준비상태 *</label>
+                                        <select name="status" value={formData.status} onChange={handleChange} required>
+                                            <option value="확인전">확인전</option>
+                                            <option value="확인중">확인중</option>
+                                            <option value="볼수있음">볼수있음</option>
+                                            <option value="오늘못봄">오늘못봄</option>
+                                            <option value="계약됨">계약됨</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>부동산 *</label>
+                                        <input
+                                            type="text"
+                                            name="realEstate"
+                                            value={formData.realEstate}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>연락처 *</label>
+                                        <input
+                                            type="tel"
+                                            name="contact"
+                                            value={formData.contact}
+                                            onChange={handleChange}
+                                            placeholder="010-0000-0000"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>매물정보 *</label>
+                                    <textarea
+                                        name="propertyInfo"
+                                        value={formData.propertyInfo}
+                                        onChange={handleChange}
+                                        rows="4"
+                                        placeholder="매물의 상세 정보를 입력하세요 (예: 아파트 84㎡, 3룸 2화장실)"
+                                        required
+                                    ></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>취소</button>
+                            <button type="submit" form="property-form" className="btn btn-primary">
+                                {property ? '수정 완료' : '추가'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         // Meeting Modal Component
         function MeetingModal({ customer, onSave, onClose }) {
             const [formData, setFormData] = useState({
@@ -1866,6 +2301,32 @@
             );
         }
 
+        // Meeting Context Menu Component
+        function MeetingContextMenu({ position, meeting, onClose, onPropertyPrep }) {
+            useEffect(() => {
+                const handleClickOutside = () => onClose();
+                document.addEventListener('click', handleClickOutside);
+                return () => document.removeEventListener('click', handleClickOutside);
+            }, [onClose]);
+
+            if (!position || !meeting) return null;
+
+            return (
+                <div
+                    className="meeting-context-menu"
+                    style={{
+                        left: position.x,
+                        top: position.y
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="meeting-context-menu-item" onClick={() => { onClose(); onPropertyPrep(meeting); }}>
+                        🏠 매물준비
+                    </div>
+                </div>
+            );
+        }
+
         // Context Menu Component
         function ContextMenu({ position, customer, onClose, onAddActivity, onAddMeeting, onEditCustomer }) {
             useEffect(() => {
@@ -1899,7 +2360,7 @@
         }
 
         // Customer List New Component (3-column layout)
-        function CustomerListNew({ customers, activities, meetings, onOpenModal, onSelectCustomer, selectedCustomerId, onAddActivity, onUpdateCustomer, onDeleteCustomer, onAddMeeting, onUpdateActivity, onDeleteActivity }) {
+        function CustomerListNew({ customers, activities, meetings, onOpenModal, onSelectCustomer, selectedCustomerId, onAddActivity, onUpdateCustomer, onDeleteCustomer, onAddMeeting, onUpdateActivity, onDeleteActivity, onUpdateMeeting }) {
             const [searchTerm, setSearchTerm] = useState('');
             const [filterStatus, setFilterStatus] = useState('all');
             const [activeTab, setActiveTab] = useState('activities');
@@ -1915,6 +2376,9 @@
             const [showEditActivityModal, setShowEditActivityModal] = useState(false);
             const [showMeetingDetailModal, setShowMeetingDetailModal] = useState(false);
             const [selectedMeeting, setSelectedMeeting] = useState(null);
+            const [meetingContextMenu, setMeetingContextMenu] = useState(null);
+            const [showPropertyPrepModal, setShowPropertyPrepModal] = useState(false);
+            const [selectedMeetingForProperty, setSelectedMeetingForProperty] = useState(null);
 
             const filteredCustomers = customers.filter(customer => {
                 const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -2021,6 +2485,24 @@
 
             const handleEditCustomerFromContext = (customer) => {
                 onOpenModal(customer);
+            };
+
+            const handleMeetingContextMenu = (e, meeting) => {
+                e.preventDefault();
+                setMeetingContextMenu({
+                    x: e.pageX,
+                    y: e.pageY
+                });
+                setSelectedMeetingForProperty(meeting);
+            };
+
+            const handleCloseMeetingContextMenu = () => {
+                setMeetingContextMenu(null);
+            };
+
+            const handlePropertyPrepFromContext = (meeting) => {
+                setSelectedMeetingForProperty(meeting);
+                setShowPropertyPrepModal(true);
             };
 
             // 활동내역 컨텍스트 메뉴 핸들러
@@ -2460,6 +2942,30 @@
                         onClose={handleCloseActivityContextMenu}
                         onEdit={handleEditActivity}
                         onDelete={handleDeleteActivity}
+                    />
+                )}
+
+                {meetingContextMenu && selectedMeetingForProperty && (
+                    <MeetingContextMenu
+                        position={meetingContextMenu}
+                        meeting={selectedMeetingForProperty}
+                        onClose={handleCloseMeetingContextMenu}
+                        onPropertyPrep={handlePropertyPrepFromContext}
+                    />
+                )}
+
+                {showPropertyPrepModal && selectedMeetingForProperty && (
+                    <PropertyPrepModal
+                        meeting={selectedMeetingForProperty}
+                        onSave={(updatedMeeting) => {
+                            onUpdateMeeting(updatedMeeting.id, updatedMeeting);
+                            setShowPropertyPrepModal(false);
+                            setSelectedMeetingForProperty(null);
+                        }}
+                        onClose={() => {
+                            setShowPropertyPrepModal(false);
+                            setSelectedMeetingForProperty(null);
+                        }}
                     />
                 )}
 
@@ -2933,17 +3439,26 @@
                     </div>
 
                     <div className="card">
-                        <h3>관련 미팅</h3>
-                        {meetings.length === 0 ? (
+                        <h3>관련 미팅 ({customerMeetings.length}개)</h3>
+                        {customerMeetings.length === 0 ? (
                             <div className="empty-state">
                                 <p>예정된 미팅이 없습니다</p>
+                                <p>미팅을 추가해보세요!</p>
                             </div>
                         ) : (
-                            meetings.map(meeting => (
+                            customerMeetings.map(meeting => (
                                 <div
                                     key={meeting.id}
                                     className="list-item"
-                                    onClick={() => navigateTo('meeting-detail', null, meeting.id)}
+                                    onClick={() => {
+                                        setSelectedMeeting(meeting);
+                                        setShowMeetingDetailModal(true);
+                                    }}
+                                    onContextMenu={(e) => {
+                                        e.preventDefault();
+                                        alert('우클릭 감지됨: ' + meeting.title);
+                                        handleMeetingContextMenu(e, meeting);
+                                    }}
                                 >
                                     <h4>{meeting.title}</h4>
                                     <p>{formatDateTime(meeting.date)} | {meeting.location}</p>
