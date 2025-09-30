@@ -1606,13 +1606,13 @@
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="context-menu-item" onClick={() => { onAddActivity(customer); onClose(); }}>
+                    <div className="context-menu-item" onClick={() => { onClose(); onAddActivity(customer); }}>
                         📞 활동 기록 추가
                     </div>
-                    <div className="context-menu-item" onClick={() => { onAddMeeting(customer); onClose(); }}>
+                    <div className="context-menu-item" onClick={() => { onClose(); onAddMeeting(customer); }}>
                         📅 미팅 일정 추가
                     </div>
-                    <div className="context-menu-item" onClick={() => { onEditCustomer(customer); onClose(); }}>
+                    <div className="context-menu-item" onClick={() => { onClose(); onEditCustomer(customer); }}>
                         ✏️ 고객 정보 수정
                     </div>
                 </div>
@@ -1722,7 +1722,7 @@
 
             const handleCloseContextMenu = () => {
                 setContextMenu(null);
-                setContextMenuCustomer(null);
+                // 컨텍스트 메뉴만 닫고, contextMenuCustomer는 모달에서 사용 후 정리
             };
 
             const handleAddActivityFromContext = (customer) => {
