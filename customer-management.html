@@ -1,0 +1,2842 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객 관리 시스템</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 100px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .nav-item {
+            padding: 15px 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            white-space: pre-line;
+        }
+
+        .nav-item:hover {
+            background-color: #34495e;
+        }
+
+        .nav-item.active {
+            background-color: #3498db;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Customer List Layout */
+        .customer-list-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .filter-sidebar {
+            width: 250px;
+            background-color: white;
+            border-right: 1px solid #ecf0f1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .filter-section {
+            margin-bottom: 30px;
+        }
+
+        .filter-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .filter-item {
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .filter-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .filter-item.active {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        .filter-count {
+            margin-left: auto;
+            background-color: #ecf0f1;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .filter-item.active .filter-count {
+            background-color: #1976d2;
+            color: white;
+        }
+
+        .table-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .table-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* Detail Panel */
+        .detail-panel {
+            width: 0;
+            background-color: white;
+            border-left: 1px solid #ecf0f1;
+            overflow: hidden;
+            transition: width 0.3s ease;
+        }
+
+        .detail-panel.open {
+            width: 675px;
+        }
+
+        .detail-panel-content {
+            width: 675px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .detail-panel-header {
+            padding: 20px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-panel-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .detail-panel-close:hover {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .detail-profile {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .detail-profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .detail-profile h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .detail-profile p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .detail-tabs {
+            display: flex;
+            border-bottom: 1px solid #ecf0f1;
+            padding: 0 20px;
+        }
+
+        .detail-tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: #7f8c8d;
+            transition: all 0.2s;
+        }
+
+        .detail-tab:hover {
+            color: #2c3e50;
+        }
+
+        .detail-tab.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+        }
+
+        .detail-tab-content {
+            padding: 20px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #7f8c8d;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        /* Dashboard */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #7f8c8d;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .modal-close-btn:hover {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #ecf0f1;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e0e0e0;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+
+        .table th:last-child,
+        .table td:last-child {
+            border-right: none;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 13px;
+        }
+
+        .table td {
+            font-size: 14px;
+        }
+
+        .table tr {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .table tbody tr.selected {
+            background-color: #e3f2fd;
+        }
+
+        .table-checkbox {
+            width: 20px;
+        }
+
+        .table-number {
+            width: 50px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* List Items */
+        .list-item {
+            padding: 15px;
+            border-bottom: 1px solid #ecf0f1;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .list-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .list-item h4 {
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .list-item p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        /* Activity Timeline */
+        .activity-timeline {
+            margin-top: 20px;
+        }
+
+        .activity-item {
+            padding: 15px;
+            border-left: 3px solid #3498db;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .activity-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .activity-item-type {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .activity-item-date {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .activity-item-content {
+            color: #555;
+            font-size: 14px;
+        }
+
+        /* Meeting Checklist */
+        .checklist-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .checklist-item.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        /* Status Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #95a5a6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 15px;
+            }
+
+            .main-content {
+                padding: 15px;
+            }
+
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .table {
+                font-size: 12px;
+            }
+
+            .table th,
+            .table td {
+                padding: 8px;
+            }
+        }
+
+        /* Customer Detail */
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .detail-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .detail-field {
+            margin-bottom: 15px;
+        }
+
+        .detail-field label {
+            display: block;
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .detail-field .value {
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .detail-field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-field-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-field-row .detail-field,
+        .detail-field-row-3 .detail-field {
+            margin-bottom: 0;
+        }
+
+        .detail-field .value.memo-value {
+            height: 7.2em;
+            line-height: 1.6em;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid #000000;
+            padding: 8px;
+            border-radius: 4px;
+            background-color: #ffffff;
+        }
+
+        .memo-textarea {
+            width: 100%;
+            height: 7.2em;
+            line-height: 1.6em;
+            overflow-y: auto;
+            resize: none;
+            border: 1px solid #000000;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .memo-textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .detail-info-section {
+            border: 1px solid #000000;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            min-width: 150px;
+            padding: 8px 0;
+        }
+
+        .context-menu-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+
+        .context-menu-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .context-menu-divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 8px 0;
+        }
+
+        /* Backup Section */
+        .backup-section {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .backup-card {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Utility Functions
+        const generateId = () => '_' + Math.random().toString(36).substr(2, 9);
+
+        const formatDate = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        };
+
+        const formatDateTime = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+
+        const isToday = (dateString) => {
+            const today = new Date();
+            const date = new Date(dateString);
+            return today.toDateString() === date.toDateString();
+        };
+
+        const isPastDue = (dateString) => {
+            const today = new Date();
+            const date = new Date(dateString);
+            today.setHours(0, 0, 0, 0);
+            date.setHours(0, 0, 0, 0);
+            return date < today;
+        };
+
+        // Data Management Hook
+        const useLocalStorage = (key, initialValue) => {
+            const [storedValue, setStoredValue] = useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    console.error(error);
+                    return initialValue;
+                }
+            });
+
+            const setValue = (value) => {
+                try {
+                    const valueToStore = value instanceof Function ? value(storedValue) : value;
+                    setStoredValue(valueToStore);
+                    window.localStorage.setItem(key, JSON.stringify(valueToStore));
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+
+            return [storedValue, setValue];
+        };
+
+        // Main App Component
+        function App() {
+            const [currentPage, setCurrentPage] = useState('customers');
+            const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+            const [selectedMeetingId, setSelectedMeetingId] = useState(null);
+            const [customers, setCustomers] = useLocalStorage('customers', []);
+            const [activities, setActivities] = useLocalStorage('activities', []);
+            const [meetings, setMeetings] = useLocalStorage('meetings', []);
+            const [showCustomerModal, setShowCustomerModal] = useState(false);
+            const [editingCustomer, setEditingCustomer] = useState(null);
+
+            const navigateTo = (page, customerId = null, meetingId = null) => {
+                setCurrentPage(page);
+                setSelectedCustomerId(customerId);
+                setSelectedMeetingId(meetingId);
+            };
+
+            // CRUD Operations
+            const addCustomer = (customer) => {
+                const newCustomer = {
+                    ...customer,
+                    id: generateId(),
+                    createdAt: new Date().toISOString()
+                };
+                setCustomers([...customers, newCustomer]);
+                return newCustomer;
+            };
+
+            const updateCustomer = (id, updatedCustomer) => {
+                setCustomers(customers.map(c => c.id === id ? { ...c, ...updatedCustomer } : c));
+            };
+
+            const deleteCustomer = (id) => {
+                setCustomers(customers.filter(c => c.id !== id));
+                setActivities(activities.filter(a => a.customerId !== id));
+                setMeetings(meetings.filter(m => m.customerId !== id));
+            };
+
+            const addActivity = (activity) => {
+                const newActivity = {
+                    ...activity,
+                    id: generateId(),
+                    createdAt: new Date().toISOString()
+                };
+                setActivities([...activities, newActivity]);
+            };
+
+            const addMeeting = (meeting) => {
+                const newMeeting = {
+                    ...meeting,
+                    id: generateId(),
+                    createdAt: new Date().toISOString(),
+                    checklist: meeting.checklist || []
+                };
+                setMeetings([...meetings, newMeeting]);
+                return newMeeting;
+            };
+
+            const updateMeeting = (id, updatedMeeting) => {
+                setMeetings(meetings.map(m => m.id === id ? { ...m, ...updatedMeeting } : m));
+            };
+
+            const deleteMeeting = (id) => {
+                if (window.confirm('정말로 이 미팅을 삭제하시겠습니까?')) {
+                    setMeetings(meetings.filter(m => m.id !== id));
+                }
+            };
+
+            const exportData = () => {
+                const data = {
+                    customers,
+                    activities,
+                    meetings,
+                    exportDate: new Date().toISOString()
+                };
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `customer-backup-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+            };
+
+            const importData = (file) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.customers) setCustomers(data.customers);
+                        if (data.activities) setActivities(data.activities);
+                        if (data.meetings) setMeetings(data.meetings);
+                        alert('데이터를 성공적으로 복원했습니다.');
+                    } catch (error) {
+                        alert('데이터 복원에 실패했습니다. 파일을 확인해주세요.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            const openCustomerModal = (customer = null) => {
+                setEditingCustomer(customer);
+                setShowCustomerModal(true);
+            };
+
+            const closeCustomerModal = () => {
+                setShowCustomerModal(false);
+                setEditingCustomer(null);
+            };
+
+            const handleSaveCustomer = (customerData) => {
+                if (editingCustomer) {
+                    updateCustomer(editingCustomer.id, customerData);
+                } else {
+                    addCustomer(customerData);
+                }
+                closeCustomerModal();
+            };
+
+            return (
+                <div className="app-container">
+                    <Sidebar
+                        currentPage={currentPage}
+                        navigateTo={navigateTo}
+                    />
+                    <div className="main-content">
+                        {currentPage === 'customers' && (
+                            <CustomerListNew
+                                customers={customers}
+                                activities={activities}
+                                meetings={meetings}
+                                onOpenModal={openCustomerModal}
+                                onSelectCustomer={setSelectedCustomerId}
+                                selectedCustomerId={selectedCustomerId}
+                                onAddActivity={addActivity}
+                                onUpdateCustomer={updateCustomer}
+                                onDeleteCustomer={deleteCustomer}
+                            />
+                        )}
+                        {currentPage === 'meetings' && (
+                            <MeetingList
+                                meetings={meetings}
+                                customers={customers}
+                                navigateTo={navigateTo}
+                            />
+                        )}
+                        {currentPage === 'meeting-add' && (
+                            <MeetingForm
+                                customers={customers}
+                                onSave={(meeting) => {
+                                    const newMeeting = addMeeting(meeting);
+                                    navigateTo('meeting-detail', null, newMeeting.id);
+                                }}
+                                navigateTo={navigateTo}
+                            />
+                        )}
+                        {currentPage === 'meeting-detail' && selectedMeetingId && (
+                            <MeetingDetail
+                                meeting={meetings.find(m => m.id === selectedMeetingId)}
+                                customer={customers.find(c => c.id === meetings.find(m => m.id === selectedMeetingId)?.customerId)}
+                                onUpdate={(data) => updateMeeting(selectedMeetingId, data)}
+                                onDelete={() => {
+                                    deleteMeeting(selectedMeetingId);
+                                    navigateTo('meetings');
+                                }}
+                                navigateTo={navigateTo}
+                            />
+                        )}
+                        {currentPage === 'backup' && (
+                            <BackupRestore
+                                onExport={exportData}
+                                onImport={importData}
+                                customers={customers}
+                                activities={activities}
+                                meetings={meetings}
+                            />
+                        )}
+                    </div>
+
+                    {/* Customer Modal */}
+                    {showCustomerModal && (
+                        <CustomerModal
+                            customer={editingCustomer}
+                            onSave={handleSaveCustomer}
+                            onClose={closeCustomerModal}
+                        />
+                    )}
+                </div>
+            );
+        }
+
+        // Sidebar Component
+        function Sidebar({ currentPage, navigateTo }) {
+            const menuItems = [
+                { id: 'customers', label: '고객' },
+                { id: 'meetings', label: '미팅' },
+                { id: 'backup', label: '데이터' }
+            ];
+
+            return (
+                <div className="sidebar">
+                    {menuItems.map(item => (
+                        <div
+                            key={item.id}
+                            className={`nav-item ${currentPage === item.id ? 'active' : ''}`}
+                            onClick={() => navigateTo(item.id)}
+                        >
+                            {item.label}
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // Dashboard Component
+        function Dashboard({ customers, activities, meetings, navigateTo }) {
+            const todayMeetings = meetings.filter(m => isToday(m.date));
+            const upcomingMeetings = meetings.filter(m => {
+                const meetingDate = new Date(m.date);
+                const today = new Date();
+                const weekFromNow = new Date();
+                weekFromNow.setDate(today.getDate() + 7);
+                return meetingDate > today && meetingDate <= weekFromNow;
+            });
+
+            const customersNeedingContact = customers.filter(c => {
+                const lastActivity = activities
+                    .filter(a => a.customerId === c.id)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+                if (!lastActivity) return true;
+
+                const daysSinceContact = Math.floor(
+                    (new Date() - new Date(lastActivity.createdAt)) / (1000 * 60 * 60 * 24)
+                );
+                return daysSinceContact > 30;
+            });
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h2>대시보드</h2>
+                        <p>고객 관리 현황을 한눈에 확인하세요</p>
+                    </div>
+
+                    <div className="dashboard-cards">
+                        <div className="stat-card">
+                            <h3>총 고객 수</h3>
+                            <div className="number">{customers.length}</div>
+                        </div>
+                        <div className="stat-card" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
+                            <h3>오늘의 미팅</h3>
+                            <div className="number">{todayMeetings.length}</div>
+                        </div>
+                        <div className="stat-card" style={{background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'}}>
+                            <h3>연락 필요 고객</h3>
+                            <div className="number">{customersNeedingContact.length}</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3>오늘의 미팅</h3>
+                        {todayMeetings.length === 0 ? (
+                            <div className="empty-state">
+                                <p>오늘 예정된 미팅이 없습니다.</p>
+                            </div>
+                        ) : (
+                            todayMeetings.map(meeting => {
+                                const customer = customers.find(c => c.id === meeting.customerId);
+                                return (
+                                    <div
+                                        key={meeting.id}
+                                        className="list-item"
+                                        onClick={() => navigateTo('meeting-detail', null, meeting.id)}
+                                    >
+                                        <h4>{meeting.title}</h4>
+                                        <p>고객: {customer?.name} | 시간: {new Date(meeting.date).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</p>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+
+                    <div className="card">
+                        <h3>연락이 필요한 고객</h3>
+                        {customersNeedingContact.length === 0 ? (
+                            <div className="empty-state">
+                                <p>모든 고객과 최근 연락을 유지하고 있습니다.</p>
+                            </div>
+                        ) : (
+                            customersNeedingContact.slice(0, 5).map(customer => {
+                                const lastActivity = activities
+                                    .filter(a => a.customerId === customer.id)
+                                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+                                const daysSinceContact = lastActivity
+                                    ? Math.floor((new Date() - new Date(lastActivity.createdAt)) / (1000 * 60 * 60 * 24))
+                                    : '없음';
+
+                                return (
+                                    <div
+                                        key={customer.id}
+                                        className="list-item"
+                                        onClick={() => navigateTo('customer-detail', customer.id)}
+                                    >
+                                        <h4>{customer.name}</h4>
+                                        <p>
+                                            마지막 연락: {lastActivity ? `${daysSinceContact}일 전` : '연락 기록 없음'} |
+                                            전화: {customer.phone}
+                                        </p>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+
+                    <div className="card">
+                        <h3>다가오는 미팅 (7일 이내)</h3>
+                        {upcomingMeetings.length === 0 ? (
+                            <div className="empty-state">
+                                <p>다가오는 미팅이 없습니다.</p>
+                            </div>
+                        ) : (
+                            upcomingMeetings.map(meeting => {
+                                const customer = customers.find(c => c.id === meeting.customerId);
+                                return (
+                                    <div
+                                        key={meeting.id}
+                                        className="list-item"
+                                        onClick={() => navigateTo('meeting-detail', null, meeting.id)}
+                                    >
+                                        <h4>{meeting.title}</h4>
+                                        <p>고객: {customer?.name} | 날짜: {formatDateTime(meeting.date)}</p>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Customer Modal Component
+        function CustomerModal({ customer, onSave, onClose }) {
+            const [formData, setFormData] = useState(customer || {
+                name: '',
+                phone: '',
+                hopefulDeposit: '',
+                hopefulMonthlyRent: '',
+                preferredArea: '',
+                moveInDate: '',
+                meetingDate: '',
+                source: '네이버광고',
+                memo: '',
+                status: '신규'
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSave(formData);
+            };
+
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>{customer ? '고객 수정' : '새 고객 추가'}</h3>
+                            <button className="modal-close-btn" onClick={onClose}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <form id="customer-form" onSubmit={handleSubmit}>
+                                <div className="form-group">
+                                    <label>고객명 *</label>
+                                    <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>연락처 *</label>
+                                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="010-0000-0000" required />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>희망보증금 (만원) *</label>
+                                        <input type="number" name="hopefulDeposit" value={formData.hopefulDeposit} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>희망월세 (만원) *</label>
+                                        <input type="number" name="hopefulMonthlyRent" value={formData.hopefulMonthlyRent} onChange={handleChange} required />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>선호지역 *</label>
+                                    <input type="text" name="preferredArea" value={formData.preferredArea} onChange={handleChange} required />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>입주희망일 *</label>
+                                        <input type="date" name="moveInDate" value={formData.moveInDate} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>미팅일자</label>
+                                        <input type="date" name="meetingDate" value={formData.meetingDate} onChange={handleChange} />
+                                    </div>
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>경로 *</label>
+                                        <select name="source" value={formData.source} onChange={handleChange} required>
+                                            <option value="네이버광고">네이버광고</option>
+                                            <option value="블로그">블로그</option>
+                                            <option value="워킹">워킹</option>
+                                            <option value="지인소개">지인소개</option>
+                                            <option value="불명">불명</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>상태</label>
+                                        <select name="status" value={formData.status} onChange={handleChange}>
+                                            <option value="신규">신규</option>
+                                            <option value="진행중">진행중</option>
+                                            <option value="계약완료">계약완료</option>
+                                            <option value="실패">실패</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>메모</label>
+                                    <textarea name="memo" value={formData.memo} onChange={handleChange} rows="3"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>취소</button>
+                            <button type="submit" form="customer-form" className="btn btn-primary">
+                                {customer ? '수정하기' : '추가하기'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Activity Modal Component
+        function ActivityModal({ customer, onSave, onClose }) {
+            const [formData, setFormData] = useState({
+                type: '전화상담',
+                content: ''
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSave({
+                    ...formData,
+                    customerId: customer.id
+                });
+            };
+
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>활동 추가 - {customer.name}</h3>
+                            <button className="modal-close-btn" onClick={onClose}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <form id="activity-form" onSubmit={handleSubmit}>
+                                <div className="form-group">
+                                    <label>활동 유형 *</label>
+                                    <select name="type" value={formData.type} onChange={handleChange} required>
+                                        <option value="전화상담">전화상담</option>
+                                        <option value="문자상담">문자상담</option>
+                                        <option value="카카오톡상담">카카오톡상담</option>
+                                        <option value="매물제안">매물제안</option>
+                                        <option value="기타상담">기타상담</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>활동 내용 *</label>
+                                    <textarea name="content" value={formData.content} onChange={handleChange} rows="5" required></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>취소</button>
+                            <button type="submit" form="activity-form" className="btn btn-primary">저장</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Meeting Modal Component
+        function MeetingModal({ customer, onSave, onClose }) {
+            const [formData, setFormData] = useState({
+                title: '',
+                date: '',
+                time: '',
+                location: '',
+                notes: ''
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const meetingDateTime = `${formData.date}T${formData.time}:00`;
+                onSave({
+                    title: formData.title,
+                    date: meetingDateTime,
+                    location: formData.location,
+                    notes: formData.notes,
+                    customerId: customer.id
+                });
+            };
+
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>미팅 추가 - {customer.name}</h3>
+                            <button className="modal-close-btn" onClick={onClose}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <form id="meeting-form" onSubmit={handleSubmit}>
+                                <div className="form-group">
+                                    <label>미팅 제목 *</label>
+                                    <input type="text" name="title" value={formData.title} onChange={handleChange} required />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>미팅 날짜 *</label>
+                                        <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>미팅 시간 *</label>
+                                        <input type="time" name="time" value={formData.time} onChange={handleChange} required />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>미팅 장소</label>
+                                    <input type="text" name="location" value={formData.location} onChange={handleChange} />
+                                </div>
+                                <div className="form-group">
+                                    <label>메모</label>
+                                    <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>취소</button>
+                            <button type="submit" form="meeting-form" className="btn btn-primary">저장</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Customer List New Component (3-column layout)
+        function CustomerListNew({ customers, activities, meetings, onOpenModal, onSelectCustomer, selectedCustomerId, onAddActivity, onUpdateCustomer, onDeleteCustomer, onAddMeeting }) {
+            const [searchTerm, setSearchTerm] = useState('');
+            const [filterStatus, setFilterStatus] = useState('all');
+            const [activeTab, setActiveTab] = useState('activities');
+            const [memoValue, setMemoValue] = useState('');
+            const [selectedCustomerIds, setSelectedCustomerIds] = useState([]);
+            const [showStatusChangeDropdown, setShowStatusChangeDropdown] = useState(false);
+            const [contextMenu, setContextMenu] = useState(null);
+            const [showActivityModal, setShowActivityModal] = useState(false);
+            const [showMeetingModal, setShowMeetingModal] = useState(false);
+            const [contextMenuCustomer, setContextMenuCustomer] = useState(null);
+
+            const filteredCustomers = customers.filter(customer => {
+                const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    customer.company.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchesStatus = filterStatus === 'all' || customer.status === filterStatus;
+                return matchesSearch && matchesStatus;
+            });
+
+            const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
+            const customerActivities = selectedCustomer ? activities.filter(a => a.customerId === selectedCustomerId) : [];
+            const customerMeetings = selectedCustomer ? meetings.filter(m => m.customerId === selectedCustomerId) : [];
+
+            // Update memo value when selected customer changes
+            React.useEffect(() => {
+                if (selectedCustomer) {
+                    setMemoValue(selectedCustomer.memo || '');
+                }
+            }, [selectedCustomerId]);
+
+            const handleMemoChange = (e) => {
+                const newMemo = e.target.value;
+                setMemoValue(newMemo);
+
+                // Auto-save after typing stops (debounce)
+                if (selectedCustomer) {
+                    onUpdateCustomer(selectedCustomerId, { ...selectedCustomer, memo: newMemo });
+                }
+            };
+
+            const handleCheckboxChange = (customerId) => {
+                setSelectedCustomerIds(prev => {
+                    if (prev.includes(customerId)) {
+                        return prev.filter(id => id !== customerId);
+                    } else {
+                        return [...prev, customerId];
+                    }
+                });
+            };
+
+            const handleSelectAll = (e) => {
+                if (e.target.checked) {
+                    setSelectedCustomerIds(filteredCustomers.map(c => c.id));
+                } else {
+                    setSelectedCustomerIds([]);
+                }
+            };
+
+            const handleBulkStatusChange = (newStatus) => {
+                selectedCustomerIds.forEach(id => {
+                    const customer = customers.find(c => c.id === id);
+                    if (customer) {
+                        onUpdateCustomer(id, { ...customer, status: newStatus });
+                    }
+                });
+                setSelectedCustomerIds([]);
+                setShowStatusChangeDropdown(false);
+            };
+
+            const handleBulkDelete = () => {
+                if (window.confirm(`선택한 ${selectedCustomerIds.length}명의 고객을 정말 삭제하시겠습니까?`)) {
+                    selectedCustomerIds.forEach(id => {
+                        const customer = customers.find(c => c.id === id);
+                        if (customer) {
+                            // Delete customer and related data
+                            const updatedCustomers = customers.filter(c => c.id !== id);
+                            // This will be handled by parent component's deleteCustomer function
+                        }
+                    });
+                    // Call delete for each selected customer
+                    selectedCustomerIds.forEach(id => {
+                        onDeleteCustomer(id);
+                    });
+                    setSelectedCustomerIds([]);
+                }
+            };
+
+            const statusCounts = {
+                all: customers.length,
+                신규: customers.filter(c => c.status === '신규').length,
+                진행중: customers.filter(c => c.status === '진행중').length,
+                계약완료: customers.filter(c => c.status === '계약완료').length,
+                실패: customers.filter(c => c.status === '실패').length
+            };
+
+            return (
+                <div className="customer-list-container">
+                    {/* Left Filter Sidebar */}
+                    <div className="filter-sidebar">
+                        <div className="filter-section">
+                            <h3>상태</h3>
+                            <div
+                                className={`filter-item ${filterStatus === 'all' ? 'active' : ''}`}
+                                onClick={() => setFilterStatus('all')}
+                            >
+                                전체
+                                <span className="filter-count">{statusCounts.all}</span>
+                            </div>
+                            <div
+                                className={`filter-item ${filterStatus === '신규' ? 'active' : ''}`}
+                                onClick={() => setFilterStatus('신규')}
+                            >
+                                신규
+                                <span className="filter-count">{statusCounts.신규}</span>
+                            </div>
+                            <div
+                                className={`filter-item ${filterStatus === '진행중' ? 'active' : ''}`}
+                                onClick={() => setFilterStatus('진행중')}
+                            >
+                                진행중
+                                <span className="filter-count">{statusCounts.진행중}</span>
+                            </div>
+                            <div
+                                className={`filter-item ${filterStatus === '계약완료' ? 'active' : ''}`}
+                                onClick={() => setFilterStatus('계약완료')}
+                            >
+                                계약완료
+                                <span className="filter-count">{statusCounts.계약완료}</span>
+                            </div>
+                            <div
+                                className={`filter-item ${filterStatus === '실패' ? 'active' : ''}`}
+                                onClick={() => setFilterStatus('실패')}
+                            >
+                                실패
+                                <span className="filter-count">{statusCounts.실패}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Center Table */}
+                    <div className="table-container">
+                        <div className="table-header">
+                            <h2>고객 목록</h2>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                {selectedCustomerIds.length > 0 && (
+                                    <>
+                                        <div style={{ position: 'relative' }}>
+                                            <button
+                                                className="btn btn-secondary"
+                                                onClick={() => setShowStatusChangeDropdown(!showStatusChangeDropdown)}
+                                            >
+                                                상태 변경 ({selectedCustomerIds.length})
+                                            </button>
+                                        {showStatusChangeDropdown && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '100%',
+                                                left: 0,
+                                                marginTop: '5px',
+                                                backgroundColor: 'white',
+                                                border: '1px solid #ddd',
+                                                borderRadius: '5px',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                zIndex: 1000,
+                                                minWidth: '150px'
+                                            }}>
+                                                <div
+                                                    onClick={() => handleBulkStatusChange('신규')}
+                                                    style={{ padding: '10px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                                >
+                                                    신규
+                                                </div>
+                                                <div
+                                                    onClick={() => handleBulkStatusChange('진행중')}
+                                                    style={{ padding: '10px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                                >
+                                                    진행중
+                                                </div>
+                                                <div
+                                                    onClick={() => handleBulkStatusChange('계약완료')}
+                                                    style={{ padding: '10px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                                >
+                                                    계약완료
+                                                </div>
+                                                <div
+                                                    onClick={() => handleBulkStatusChange('실패')}
+                                                    style={{ padding: '10px', cursor: 'pointer' }}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                                >
+                                                    실패
+                                                </div>
+                                            </div>
+                                        )}
+                                        </div>
+                                        <button
+                                            className="btn btn-danger"
+                                            onClick={handleBulkDelete}
+                                        >
+                                            삭제 ({selectedCustomerIds.length})
+                                        </button>
+                                    </>
+                                )}
+                                <button className="btn btn-primary" onClick={() => onOpenModal()}>
+                                    + 고객 추가
+                                </button>
+                            </div>
+                        </div>
+                        <div className="table-content">
+                            <div style={{ marginBottom: '15px' }}>
+                                <input
+                                    type="text"
+                                    placeholder="고객명 또는 회사명 검색..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}
+                                />
+                            </div>
+                            {filteredCustomers.length === 0 ? (
+                                <div className="empty-state">
+                                    <h3>등록된 고객이 없습니다</h3>
+                                    <p>새로운 고객을 추가해보세요</p>
+                                </div>
+                            ) : (
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th className="table-number">#</th>
+                                            <th className="table-checkbox">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedCustomerIds.length === filteredCustomers.length && filteredCustomers.length > 0}
+                                                    onChange={handleSelectAll}
+                                                />
+                                            </th>
+                                            <th>고객명</th>
+                                            <th>연락처</th>
+                                            <th>희망보증금</th>
+                                            <th>희망월세</th>
+                                            <th>선호지역</th>
+                                            <th>입주희망일</th>
+                                            <th>미팅일자</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredCustomers.map((customer, index) => (
+                                            <tr
+                                                key={customer.id}
+                                                className={selectedCustomerId === customer.id ? 'selected' : ''}
+                                                onClick={() => onSelectCustomer(customer.id)}
+                                            >
+                                                <td className="table-number">{index + 1}</td>
+                                                <td className="table-checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedCustomerIds.includes(customer.id)}
+                                                        onChange={() => handleCheckboxChange(customer.id)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                </td>
+                                                <td>{customer.name}</td>
+                                                <td>{customer.phone}</td>
+                                                <td>{customer.hopefulDeposit ? `${customer.hopefulDeposit}만원` : '-'}</td>
+                                                <td>{customer.hopefulMonthlyRent ? `${customer.hopefulMonthlyRent}만원` : '-'}</td>
+                                                <td>{customer.preferredArea || '-'}</td>
+                                                <td>{customer.moveInDate || '-'}</td>
+                                                <td>{customer.meetingDate || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Detail Panel */}
+                    <div className={`detail-panel ${selectedCustomer ? 'open' : ''}`}>
+                        {selectedCustomer && (
+                            <div className="detail-panel-content">
+                                <div className="detail-panel-header">
+                                    <h3>고객 상세</h3>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <button
+                                            className="btn btn-primary"
+                                            style={{ padding: '8px 16px', fontSize: '14px' }}
+                                            onClick={() => onOpenModal(selectedCustomer)}
+                                        >
+                                            수정
+                                        </button>
+                                        <button className="detail-panel-close" onClick={() => onSelectCustomer(null)}>×</button>
+                                    </div>
+                                </div>
+
+                                <div style={{ padding: '20px' }}>
+                                    <div className="detail-info-section">
+                                        <div className="detail-field-row-3">
+                                            <div className="detail-field">
+                                                <label>고객명</label>
+                                                <div className="value">{selectedCustomer.name}</div>
+                                            </div>
+                                            <div className="detail-field">
+                                                <label>연락처</label>
+                                                <div className="value">{selectedCustomer.phone}</div>
+                                            </div>
+                                            <div className="detail-field">
+                                                <label>경로</label>
+                                                <div className="value">{selectedCustomer.source || '-'}</div>
+                                            </div>
+                                        </div>
+                                        <div className="detail-field-row-3">
+                                            <div className="detail-field">
+                                                <label>희망보증금</label>
+                                                <div className="value">{selectedCustomer.hopefulDeposit ? `${selectedCustomer.hopefulDeposit}만원` : '-'}</div>
+                                            </div>
+                                            <div className="detail-field">
+                                                <label>희망월세</label>
+                                                <div className="value">{selectedCustomer.hopefulMonthlyRent ? `${selectedCustomer.hopefulMonthlyRent}만원` : '-'}</div>
+                                            </div>
+                                            <div className="detail-field">
+                                                <label>선호지역</label>
+                                                <div className="value">{selectedCustomer.preferredArea || '-'}</div>
+                                            </div>
+                                        </div>
+                                        <div className="detail-field-row-3">
+                                            <div className="detail-field">
+                                                <label>입주희망일</label>
+                                                <div className="value">{selectedCustomer.moveInDate || '-'}</div>
+                                            </div>
+                                            <div className="detail-field">
+                                                <label>미팅일자</label>
+                                                <div className="value">{selectedCustomer.meetingDate || '-'}</div>
+                                            </div>
+                                            <div className="detail-field">
+                                                <label>상태</label>
+                                                <div className="value">
+                                                    <span className={`badge ${
+                                                        selectedCustomer.status === '계약완료' ? 'badge-success' :
+                                                        selectedCustomer.status === '실패' ? 'badge-danger' :
+                                                        selectedCustomer.status === '진행중' ? 'badge-primary' :
+                                                        'badge-warning'
+                                                    }`}>
+                                                        {selectedCustomer.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="detail-field">
+                                            <label>메모</label>
+                                            <textarea
+                                                className="memo-textarea"
+                                                value={memoValue}
+                                                onChange={handleMemoChange}
+                                                placeholder="메모를 입력하세요..."
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="detail-tabs">
+                                    <div
+                                        className={`detail-tab ${activeTab === 'activities' ? 'active' : ''}`}
+                                        onClick={() => setActiveTab('activities')}
+                                    >
+                                        활동 내역
+                                    </div>
+                                    <div
+                                        className={`detail-tab ${activeTab === 'meetings' ? 'active' : ''}`}
+                                        onClick={() => setActiveTab('meetings')}
+                                    >
+                                        미팅
+                                    </div>
+                                </div>
+
+                                <div className="detail-tab-content">
+                                    {activeTab === 'activities' && (
+                                        <div>
+                                            <h4 style={{ marginBottom: '15px' }}>활동 내역 ({customerActivities.length})</h4>
+                                            {customerActivities.length === 0 ? (
+                                                <p style={{ color: '#7f8c8d', textAlign: 'center' }}>활동 기록이 없습니다</p>
+                                            ) : (
+                                                <div className="activity-timeline">
+                                                    {customerActivities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(activity => (
+                                                        <div key={activity.id} className="activity-item">
+                                                            <div className="activity-item-header">
+                                                                <span className="activity-item-type">
+                                                                    {activity.type === 'call' ? '전화 통화' :
+                                                                     activity.type === 'email' ? '이메일' :
+                                                                     activity.type === 'meeting' ? '미팅' : '메모'}
+                                                                </span>
+                                                                <span className="activity-item-date">
+                                                                    {formatDateTime(activity.createdAt)}
+                                                                </span>
+                                                            </div>
+                                                            <div className="activity-item-content">{activity.content}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {activeTab === 'meetings' && (
+                                        <div>
+                                            <h4 style={{ marginBottom: '15px' }}>미팅 ({customerMeetings.length})</h4>
+                                            {customerMeetings.length === 0 ? (
+                                                <p style={{ color: '#7f8c8d', textAlign: 'center' }}>예정된 미팅이 없습니다</p>
+                                            ) : (
+                                                customerMeetings.map(meeting => (
+                                                    <div key={meeting.id} className="list-item">
+                                                        <h4>{meeting.title}</h4>
+                                                        <p>{formatDateTime(meeting.date)} | {meeting.location}</p>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Customer List Component (Old - Keep for other pages)
+        function CustomerList({ customers, navigateTo }) {
+            const [searchTerm, setSearchTerm] = useState('');
+            const [filterStatus, setFilterStatus] = useState('all');
+
+            const filteredCustomers = customers.filter(customer => {
+                const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    customer.company.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchesStatus = filterStatus === 'all' || customer.status === filterStatus;
+                return matchesSearch && matchesStatus;
+            });
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h2>고객 목록</h2>
+                        <p>등록된 모든 고객을 관리합니다</p>
+                    </div>
+
+                    <div className="card">
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                            <input
+                                type="text"
+                                placeholder="고객명 또는 회사명 검색..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{ flex: 1, minWidth: '200px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}
+                            />
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}
+                            >
+                                <option value="all">모든 상태</option>
+                                <option value="active">활성</option>
+                                <option value="inactive">비활성</option>
+                                <option value="potential">잠재고객</option>
+                            </select>
+                            <button className="btn btn-primary" onClick={() => navigateTo('customer-add')}>
+                                + 고객 추가
+                            </button>
+                        </div>
+
+                        {filteredCustomers.length === 0 ? (
+                            <div className="empty-state">
+                                <h3>등록된 고객이 없습니다</h3>
+                                <p>새로운 고객을 추가해보세요</p>
+                            </div>
+                        ) : (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>이름</th>
+                                        <th>회사</th>
+                                        <th>직급</th>
+                                        <th>전화번호</th>
+                                        <th>이메일</th>
+                                        <th>상태</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredCustomers.map(customer => (
+                                        <tr key={customer.id}>
+                                            <td>{customer.name}</td>
+                                            <td>{customer.company}</td>
+                                            <td>{customer.position}</td>
+                                            <td>{customer.phone}</td>
+                                            <td>{customer.email}</td>
+                                            <td>
+                                                <span className={`badge ${
+                                                    customer.status === 'active' ? 'badge-success' :
+                                                    customer.status === 'inactive' ? 'badge-danger' :
+                                                    'badge-warning'
+                                                }`}>
+                                                    {customer.status === 'active' ? '활성' :
+                                                     customer.status === 'inactive' ? '비활성' : '잠재고객'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="table-actions">
+                                                    <button
+                                                        className="btn btn-primary btn-small"
+                                                        onClick={() => navigateTo('customer-detail', customer.id)}
+                                                    >
+                                                        상세
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-secondary btn-small"
+                                                        onClick={() => navigateTo('customer-edit', customer.id)}
+                                                    >
+                                                        수정
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Customer Form Component
+        function CustomerForm({ customer, onSave, navigateTo }) {
+            const [formData, setFormData] = useState(customer || {
+                name: '',
+                company: '',
+                position: '',
+                phone: '',
+                email: '',
+                address: '',
+                status: 'potential',
+                notes: ''
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSave(formData);
+            };
+
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h2>{customer ? '고객 수정' : '새 고객 추가'}</h2>
+                        <p>{customer ? '고객 정보를 수정합니다' : '새로운 고객을 등록합니다'}</p>
+                    </div>
+
+                    <div className="card">
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>이름 *</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>회사</label>
+                                <input
+                                    type="text"
+                                    name="company"
+                                    value={formData.company}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>직급</label>
+                                <input
+                                    type="text"
+                                    name="position"
+                                    value={formData.position}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>전화번호 *</label>
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>이메일</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>주소</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={formData.address}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>상태</label>
+                                <select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleChange}
+                                >
+                                    <option value="potential">잠재고객</option>
+                                    <option value="active">활성</option>
+                                    <option value="inactive">비활성</option>
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>메모</label>
+                                <textarea
+                                    name="notes"
+                                    value={formData.notes}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-actions">
+                                <button type="submit" className="btn btn-primary">
+                                    {customer ? '수정하기' : '추가하기'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => navigateTo('customers')}
+                                >
+                                    취소
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // Customer Detail Component
+        function CustomerDetail({ customer, activities, meetings, onDelete, onAddActivity, navigateTo }) {
+            const [showActivityForm, setShowActivityForm] = useState(false);
+            const [activityData, setActivityData] = useState({
+                type: 'call',
+                content: ''
+            });
+
+            if (!customer) {
+                return (
+                    <div className="card">
+                        <div className="empty-state">
+                            <h3>고객을 찾을 수 없습니다</h3>
+                        </div>
+                    </div>
+                );
+            }
+
+            const handleActivitySubmit = (e) => {
+                e.preventDefault();
+                onAddActivity({
+                    ...activityData,
+                    customerId: customer.id
+                });
+                setActivityData({ type: 'call', content: '' });
+                setShowActivityForm(false);
+            };
+
+            const sortedActivities = [...activities].sort(
+                (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+            );
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h2>고객 상세 정보</h2>
+                        <p>{customer.name}님의 정보와 활동 내역</p>
+                    </div>
+
+                    <div className="card">
+                        <div className="detail-header">
+                            <div>
+                                <h2>{customer.name}</h2>
+                                <p style={{ color: '#7f8c8d' }}>{customer.company} {customer.position && `- ${customer.position}`}</p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => navigateTo('customer-edit', customer.id)}
+                                >
+                                    수정
+                                </button>
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={onDelete}
+                                >
+                                    삭제
+                                </button>
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => navigateTo('customers')}
+                                >
+                                    목록으로
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="detail-info">
+                            <div className="detail-field">
+                                <label>전화번호</label>
+                                <div className="value">{customer.phone}</div>
+                            </div>
+                            <div className="detail-field">
+                                <label>이메일</label>
+                                <div className="value">{customer.email || '-'}</div>
+                            </div>
+                            <div className="detail-field">
+                                <label>주소</label>
+                                <div className="value">{customer.address || '-'}</div>
+                            </div>
+                            <div className="detail-field">
+                                <label>상태</label>
+                                <div className="value">
+                                    <span className={`badge ${
+                                        customer.status === 'active' ? 'badge-success' :
+                                        customer.status === 'inactive' ? 'badge-danger' :
+                                        'badge-warning'
+                                    }`}>
+                                        {customer.status === 'active' ? '활성' :
+                                         customer.status === 'inactive' ? '비활성' : '잠재고객'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="detail-field">
+                                <label>등록일</label>
+                                <div className="value">{formatDate(customer.createdAt)}</div>
+                            </div>
+                        </div>
+
+                        {customer.notes && (
+                            <div className="detail-field">
+                                <label>메모</label>
+                                <div className="value" style={{ whiteSpace: 'pre-wrap' }}>{customer.notes}</div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h3>활동 내역</h3>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => setShowActivityForm(!showActivityForm)}
+                            >
+                                {showActivityForm ? '취소' : '+ 활동 추가'}
+                            </button>
+                        </div>
+
+                        {showActivityForm && (
+                            <form onSubmit={handleActivitySubmit} style={{ marginBottom: '20px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '5px' }}>
+                                <div className="form-group">
+                                    <label>활동 유형</label>
+                                    <select
+                                        value={activityData.type}
+                                        onChange={(e) => setActivityData({ ...activityData, type: e.target.value })}
+                                    >
+                                        <option value="call">전화 통화</option>
+                                        <option value="email">이메일</option>
+                                        <option value="meeting">미팅</option>
+                                        <option value="note">메모</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>내용</label>
+                                    <textarea
+                                        value={activityData.content}
+                                        onChange={(e) => setActivityData({ ...activityData, content: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <button type="submit" className="btn btn-success">저장</button>
+                            </form>
+                        )}
+
+                        <div className="activity-timeline">
+                            {sortedActivities.length === 0 ? (
+                                <div className="empty-state">
+                                    <p>아직 활동 내역이 없습니다</p>
+                                </div>
+                            ) : (
+                                sortedActivities.map(activity => (
+                                    <div key={activity.id} className="activity-item">
+                                        <div className="activity-item-header">
+                                            <span className="activity-item-type">
+                                                {activity.type === 'call' ? '전화 통화' :
+                                                 activity.type === 'email' ? '이메일' :
+                                                 activity.type === 'meeting' ? '미팅' : '메모'}
+                                            </span>
+                                            <span className="activity-item-date">
+                                                {formatDateTime(activity.createdAt)}
+                                            </span>
+                                        </div>
+                                        <div className="activity-item-content">{activity.content}</div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3>관련 미팅</h3>
+                        {meetings.length === 0 ? (
+                            <div className="empty-state">
+                                <p>예정된 미팅이 없습니다</p>
+                            </div>
+                        ) : (
+                            meetings.map(meeting => (
+                                <div
+                                    key={meeting.id}
+                                    className="list-item"
+                                    onClick={() => navigateTo('meeting-detail', null, meeting.id)}
+                                >
+                                    <h4>{meeting.title}</h4>
+                                    <p>{formatDateTime(meeting.date)} | {meeting.location}</p>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Meeting List Component
+        function MeetingList({ meetings, customers, navigateTo }) {
+            const [filter, setFilter] = useState('all');
+
+            const getFilteredMeetings = () => {
+                const now = new Date();
+                return meetings.filter(meeting => {
+                    const meetingDate = new Date(meeting.date);
+                    if (filter === 'upcoming') return meetingDate >= now;
+                    if (filter === 'past') return meetingDate < now;
+                    return true;
+                }).sort((a, b) => new Date(b.date) - new Date(a.date));
+            };
+
+            const filteredMeetings = getFilteredMeetings();
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h2>미팅 관리</h2>
+                        <p>모든 미팅을 관리하고 체크리스트를 확인하세요</p>
+                    </div>
+
+                    <div className="card">
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                            <select
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value)}
+                                style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}
+                            >
+                                <option value="all">모든 미팅</option>
+                                <option value="upcoming">예정된 미팅</option>
+                                <option value="past">지난 미팅</option>
+                            </select>
+                            <button className="btn btn-primary" onClick={() => navigateTo('meeting-add')}>
+                                + 미팅 추가
+                            </button>
+                        </div>
+
+                        {filteredMeetings.length === 0 ? (
+                            <div className="empty-state">
+                                <h3>미팅이 없습니다</h3>
+                                <p>새로운 미팅을 추가해보세요</p>
+                            </div>
+                        ) : (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>제목</th>
+                                        <th>고객</th>
+                                        <th>날짜</th>
+                                        <th>장소</th>
+                                        <th>상태</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredMeetings.map(meeting => {
+                                        const customer = customers.find(c => c.id === meeting.customerId);
+                                        const isPast = new Date(meeting.date) < new Date();
+
+                                        return (
+                                            <tr key={meeting.id}>
+                                                <td>{meeting.title}</td>
+                                                <td>{customer?.name || '알 수 없음'}</td>
+                                                <td>{formatDateTime(meeting.date)}</td>
+                                                <td>{meeting.location}</td>
+                                                <td>
+                                                    <span className={`badge ${isPast ? 'badge-secondary' : 'badge-info'}`}>
+                                                        {isPast ? '완료' : '예정'}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className="btn btn-primary btn-small"
+                                                        onClick={() => navigateTo('meeting-detail', null, meeting.id)}
+                                                    >
+                                                        상세
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Meeting Form Component
+        function MeetingForm({ customers, onSave, navigateTo }) {
+            const [formData, setFormData] = useState({
+                customerId: '',
+                title: '',
+                date: '',
+                location: '',
+                notes: '',
+                checklist: [
+                    { id: generateId(), text: '미팅 자료 준비', completed: false },
+                    { id: generateId(), text: '미팅 장소 확인', completed: false },
+                    { id: generateId(), text: '미팅 후 후속 조치', completed: false }
+                ]
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSave(formData);
+            };
+
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+
+            const addChecklistItem = () => {
+                setFormData({
+                    ...formData,
+                    checklist: [
+                        ...formData.checklist,
+                        { id: generateId(), text: '', completed: false }
+                    ]
+                });
+            };
+
+            const updateChecklistItem = (id, text) => {
+                setFormData({
+                    ...formData,
+                    checklist: formData.checklist.map(item =>
+                        item.id === id ? { ...item, text } : item
+                    )
+                });
+            };
+
+            const removeChecklistItem = (id) => {
+                setFormData({
+                    ...formData,
+                    checklist: formData.checklist.filter(item => item.id !== id)
+                });
+            };
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h2>새 미팅 추가</h2>
+                        <p>새로운 미팅을 등록합니다</p>
+                    </div>
+
+                    <div className="card">
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>고객 선택 *</label>
+                                <select
+                                    name="customerId"
+                                    value={formData.customerId}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">고객을 선택하세요</option>
+                                    {customers.map(customer => (
+                                        <option key={customer.id} value={customer.id}>
+                                            {customer.name} - {customer.company}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>미팅 제목 *</label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>날짜 및 시간 *</label>
+                                <input
+                                    type="datetime-local"
+                                    name="date"
+                                    value={formData.date}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>장소</label>
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>메모</label>
+                                <textarea
+                                    name="notes"
+                                    value={formData.notes}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>체크리스트</label>
+                                {formData.checklist.map(item => (
+                                    <div key={item.id} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                                        <input
+                                            type="text"
+                                            value={item.text}
+                                            onChange={(e) => updateChecklistItem(item.id, e.target.value)}
+                                            style={{ flex: 1 }}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn btn-danger btn-small"
+                                            onClick={() => removeChecklistItem(item.id)}
+                                        >
+                                            삭제
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={addChecklistItem}
+                                >
+                                    + 항목 추가
+                                </button>
+                            </div>
+
+                            <div className="form-actions">
+                                <button type="submit" className="btn btn-primary">
+                                    추가하기
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => navigateTo('meetings')}
+                                >
+                                    취소
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // Meeting Detail Component
+        function MeetingDetail({ meeting, customer, onUpdate, onDelete, navigateTo }) {
+            if (!meeting) {
+                return (
+                    <div className="card">
+                        <div className="empty-state">
+                            <h3>미팅을 찾을 수 없습니다</h3>
+                        </div>
+                    </div>
+                );
+            }
+
+            const toggleChecklistItem = (itemId) => {
+                const updatedChecklist = meeting.checklist.map(item =>
+                    item.id === itemId ? { ...item, completed: !item.completed } : item
+                );
+                onUpdate({ checklist: updatedChecklist });
+            };
+
+            const completedCount = meeting.checklist.filter(item => item.completed).length;
+            const totalCount = meeting.checklist.length;
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h2>미팅 상세 정보</h2>
+                        <p>{meeting.title}</p>
+                    </div>
+
+                    <div className="card">
+                        <div className="detail-header">
+                            <div>
+                                <h2>{meeting.title}</h2>
+                                <p style={{ color: '#7f8c8d' }}>
+                                    {customer ? `${customer.name} - ${customer.company}` : '알 수 없는 고객'}
+                                </p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={onDelete}
+                                >
+                                    삭제
+                                </button>
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => navigateTo('meetings')}
+                                >
+                                    목록으로
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="detail-info">
+                            <div className="detail-field">
+                                <label>날짜 및 시간</label>
+                                <div className="value">{formatDateTime(meeting.date)}</div>
+                            </div>
+                            <div className="detail-field">
+                                <label>장소</label>
+                                <div className="value">{meeting.location || '-'}</div>
+                            </div>
+                            <div className="detail-field">
+                                <label>상태</label>
+                                <div className="value">
+                                    <span className={`badge ${new Date(meeting.date) < new Date() ? 'badge-secondary' : 'badge-info'}`}>
+                                        {new Date(meeting.date) < new Date() ? '완료' : '예정'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="detail-field">
+                                <label>체크리스트 진행</label>
+                                <div className="value">{completedCount} / {totalCount} 완료</div>
+                            </div>
+                        </div>
+
+                        {meeting.notes && (
+                            <div className="detail-field">
+                                <label>메모</label>
+                                <div className="value" style={{ whiteSpace: 'pre-wrap' }}>{meeting.notes}</div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="card">
+                        <h3>체크리스트</h3>
+                        {meeting.checklist.length === 0 ? (
+                            <div className="empty-state">
+                                <p>체크리스트 항목이 없습니다</p>
+                            </div>
+                        ) : (
+                            meeting.checklist.map(item => (
+                                <div
+                                    key={item.id}
+                                    className={`checklist-item ${item.completed ? 'completed' : ''}`}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={item.completed}
+                                        onChange={() => toggleChecklistItem(item.id)}
+                                    />
+                                    <span>{item.text}</span>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {customer && (
+                        <div className="card">
+                            <h3>고객 정보</h3>
+                            <div className="list-item" onClick={() => navigateTo('customer-detail', customer.id)}>
+                                <h4>{customer.name}</h4>
+                                <p>{customer.company} | {customer.phone}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Backup and Restore Component
+        function BackupRestore({ onExport, onImport, customers, activities, meetings }) {
+            const [message, setMessage] = useState(null);
+            const fileInputRef = React.useRef(null);
+
+            const handleExport = () => {
+                onExport();
+                setMessage({ type: 'success', text: '데이터를 성공적으로 백업했습니다.' });
+                setTimeout(() => setMessage(null), 3000);
+            };
+
+            const handleImport = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    onImport(file);
+                    setMessage({ type: 'success', text: '데이터를 성공적으로 복원했습니다.' });
+                    setTimeout(() => setMessage(null), 3000);
+                }
+            };
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h2>백업 및 복원</h2>
+                        <p>데이터를 안전하게 백업하고 복원하세요</p>
+                    </div>
+
+                    {message && (
+                        <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-error'}`}>
+                            {message.text}
+                        </div>
+                    )}
+
+                    <div className="backup-section">
+                        <div className="card backup-card">
+                            <h3>데이터 백업</h3>
+                            <p style={{ marginBottom: '20px', color: '#7f8c8d' }}>
+                                현재 저장된 모든 데이터를 JSON 파일로 다운로드합니다.
+                            </p>
+                            <div style={{ marginBottom: '20px' }}>
+                                <div className="detail-field">
+                                    <label>총 고객 수</label>
+                                    <div className="value">{customers.length}명</div>
+                                </div>
+                                <div className="detail-field">
+                                    <label>총 활동 수</label>
+                                    <div className="value">{activities.length}건</div>
+                                </div>
+                                <div className="detail-field">
+                                    <label>총 미팅 수</label>
+                                    <div className="value">{meetings.length}건</div>
+                                </div>
+                            </div>
+                            <button className="btn btn-primary" onClick={handleExport}>
+                                백업 파일 다운로드
+                            </button>
+                        </div>
+
+                        <div className="card backup-card">
+                            <h3>데이터 복원</h3>
+                            <p style={{ marginBottom: '20px', color: '#7f8c8d' }}>
+                                이전에 백업한 JSON 파일을 업로드하여 데이터를 복원합니다.
+                            </p>
+                            <div className="alert alert-info" style={{ marginBottom: '20px' }}>
+                                <strong>주의:</strong> 복원 시 현재 데이터가 백업 파일의 데이터로 덮어씌워집니다.
+                            </div>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                accept=".json"
+                                onChange={handleImport}
+                                style={{ display: 'none' }}
+                            />
+                            <button
+                                className="btn btn-success"
+                                onClick={() => fileInputRef.current.click()}
+                            >
+                                백업 파일 선택
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3>백업 안내</h3>
+                        <ul style={{ marginLeft: '20px', lineHeight: '1.8' }}>
+                            <li>정기적으로 데이터를 백업하는 것을 권장합니다.</li>
+                            <li>백업 파일은 JSON 형식으로 저장되며, 텍스트 에디터로 열어볼 수 있습니다.</li>
+                            <li>복원 시 현재 저장된 모든 데이터가 백업 파일의 데이터로 교체됩니다.</li>
+                            <li>중요한 데이터는 여러 곳에 백업하여 보관하세요.</li>
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        // Render App
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
