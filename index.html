@@ -510,6 +510,41 @@
             color: #e74c3c;
         }
 
+        /* Activity Context Menu */
+        .activity-context-menu {
+            position: fixed;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10001;
+            min-width: 120px;
+            padding: 4px 0;
+        }
+
+        .activity-context-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+
+        .activity-context-menu-item:hover {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .activity-context-menu-item.edit:hover {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .activity-context-menu-item.delete:hover {
+            background-color: #fee;
+            color: #e74c3c;
+        }
+
         /* Table */
         .table {
             width: 100%;
@@ -1008,6 +1043,14 @@
                 setActivities([...activities, newActivity]);
             };
 
+            const updateActivity = (id, updatedActivity) => {
+                setActivities(activities.map(a => a.id === id ? { ...a, ...updatedActivity } : a));
+            };
+
+            const deleteActivity = (id) => {
+                setActivities(activities.filter(a => a.id !== id));
+            };
+
             const addMeeting = (meeting) => {
                 const newMeeting = {
                     ...meeting,
@@ -1098,6 +1141,9 @@
                                 onAddActivity={addActivity}
                                 onUpdateCustomer={updateCustomer}
                                 onDeleteCustomer={deleteCustomer}
+                                onAddMeeting={addMeeting}
+                                onUpdateActivity={updateActivity}
+                                onDeleteActivity={deleteActivity}
                             />
                         )}
                         {currentPage === 'meetings' && (
@@ -1513,6 +1559,77 @@
             );
         }
 
+        // Edit Activity Modal Component
+        function EditActivityModal({ activity, onSave, onClose }) {
+            const [formData, setFormData] = useState({
+                type: activity?.type || '전화상담',
+                datetime: activity?.datetime || new Date().toISOString().slice(0, 16),
+                content: activity?.content || ''
+            });
+
+            // activity가 null인 경우 처리
+            if (!activity) {
+                return null;
+            }
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSave({
+                    ...activity,
+                    ...formData
+                });
+            };
+
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>활동 내역 수정</h3>
+                            <button className="modal-close-btn" onClick={onClose}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <form id="edit-activity-form" onSubmit={handleSubmit}>
+                                <div className="form-group">
+                                    <label>활동 유형 *</label>
+                                    <select name="type" value={formData.type} onChange={handleChange} required>
+                                        <option value="전화상담">전화상담</option>
+                                        <option value="문자상담">문자상담</option>
+                                        <option value="매물제안">매물제안</option>
+                                        <option value="기타상담">기타상담</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>활동일시 *</label>
+                                    <input
+                                        type="datetime-local"
+                                        name="datetime"
+                                        value={formData.datetime}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>활동 내용 *</label>
+                                    <textarea name="content" value={formData.content} onChange={handleChange} rows="5" required></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>취소</button>
+                            <button type="submit" form="edit-activity-form" className="btn btn-primary">수정 완료</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         // Meeting Modal Component
         function MeetingModal({ customer, onSave, onClose }) {
             const [formData, setFormData] = useState({
@@ -1589,6 +1706,35 @@
             );
         }
 
+        // Activity Context Menu Component
+        function ActivityContextMenu({ position, activity, onClose, onEdit, onDelete }) {
+            useEffect(() => {
+                const handleClickOutside = () => onClose();
+                document.addEventListener('click', handleClickOutside);
+                return () => document.removeEventListener('click', handleClickOutside);
+            }, [onClose]);
+
+            if (!position || !activity) return null;
+
+            return (
+                <div
+                    className="activity-context-menu"
+                    style={{
+                        left: position.x,
+                        top: position.y
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="activity-context-menu-item edit" onClick={() => { onClose(); onEdit(activity); }}>
+                        ✏️ 수정
+                    </div>
+                    <div className="activity-context-menu-item delete" onClick={() => { onClose(); onDelete(activity); }}>
+                        🗑️ 삭제
+                    </div>
+                </div>
+            );
+        }
+
         // Context Menu Component
         function ContextMenu({ position, customer, onClose, onAddActivity, onAddMeeting, onEditCustomer }) {
             useEffect(() => {
@@ -1622,7 +1768,7 @@
         }
 
         // Customer List New Component (3-column layout)
-        function CustomerListNew({ customers, activities, meetings, onOpenModal, onSelectCustomer, selectedCustomerId, onAddActivity, onUpdateCustomer, onDeleteCustomer, onAddMeeting }) {
+        function CustomerListNew({ customers, activities, meetings, onOpenModal, onSelectCustomer, selectedCustomerId, onAddActivity, onUpdateCustomer, onDeleteCustomer, onAddMeeting, onUpdateActivity, onDeleteActivity }) {
             const [searchTerm, setSearchTerm] = useState('');
             const [filterStatus, setFilterStatus] = useState('all');
             const [activeTab, setActiveTab] = useState('activities');
@@ -1633,6 +1779,9 @@
             const [showActivityModal, setShowActivityModal] = useState(false);
             const [showMeetingModal, setShowMeetingModal] = useState(false);
             const [contextMenuCustomer, setContextMenuCustomer] = useState(null);
+            const [activityContextMenu, setActivityContextMenu] = useState(null);
+            const [selectedActivity, setSelectedActivity] = useState(null);
+            const [showEditActivityModal, setShowEditActivityModal] = useState(false);
 
             const filteredCustomers = customers.filter(customer => {
                 const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1739,6 +1888,36 @@
 
             const handleEditCustomerFromContext = (customer) => {
                 onOpenModal(customer);
+            };
+
+            // 활동내역 컨텍스트 메뉴 핸들러
+            const handleActivityContextMenu = (e, activity) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActivityContextMenu({
+                    x: e.pageX,
+                    y: e.pageY
+                });
+                setSelectedActivity(activity);
+            };
+
+            const handleCloseActivityContextMenu = () => {
+                setActivityContextMenu(null);
+                setSelectedActivity(null);
+            };
+
+            const handleEditActivity = (activity) => {
+                setSelectedActivity(activity);
+                setShowEditActivityModal(true);
+            };
+
+            const handleDeleteActivity = (activity) => {
+                if (window.confirm('이 활동 내역을 삭제하시겠습니까?')) {
+                    // 활동 삭제 로직 - onDeleteActivity prop을 통해 부모 컴포넌트에서 처리
+                    if (onDeleteActivity) {
+                        onDeleteActivity(activity.id);
+                    }
+                }
             };
 
             const statusCounts = {
@@ -2043,7 +2222,11 @@
                                             ) : (
                                                 <div className="activity-timeline">
                                                     {customerActivities.sort((a, b) => new Date(b.datetime || b.createdAt) - new Date(a.datetime || a.createdAt)).map(activity => (
-                                                        <div key={activity.id} className="activity-item">
+                                                        <div
+                                                            key={activity.id}
+                                                            className="activity-item"
+                                                            onContextMenu={(e) => handleActivityContextMenu(e, activity)}
+                                                        >
                                                             <div className="activity-item-header">
                                                                 <span className="activity-item-type">
                                                                     {activity.type}
@@ -2117,6 +2300,33 @@
                         onClose={() => {
                             setShowMeetingModal(false);
                             setContextMenuCustomer(null);
+                        }}
+                    />
+                )}
+
+                {activityContextMenu && selectedActivity && (
+                    <ActivityContextMenu
+                        position={activityContextMenu}
+                        activity={selectedActivity}
+                        onClose={handleCloseActivityContextMenu}
+                        onEdit={handleEditActivity}
+                        onDelete={handleDeleteActivity}
+                    />
+                )}
+
+                {showEditActivityModal && selectedActivity && (
+                    <EditActivityModal
+                        activity={selectedActivity}
+                        onSave={(activityData) => {
+                            if (onUpdateActivity) {
+                                onUpdateActivity(activityData.id, activityData);
+                            }
+                            setShowEditActivityModal(false);
+                            setSelectedActivity(null);
+                        }}
+                        onClose={() => {
+                            setShowEditActivityModal(false);
+                            setSelectedActivity(null);
                         }}
                     />
                 )}
