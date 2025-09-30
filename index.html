@@ -614,19 +614,20 @@
         }
 
         .activity-item-header {
-            display: flex;
-            justify-content: space-between;
             margin-bottom: 8px;
         }
 
         .activity-item-type {
-            font-weight: 600;
-            color: #2c3e50;
+            font-weight: bold;
+            color: black;
+            display: block;
+            margin-bottom: 4px;
         }
 
         .activity-item-date {
-            color: #7f8c8d;
+            color: red;
             font-size: 14px;
+            display: block;
         }
 
         .activity-item-content {
@@ -2007,7 +2008,6 @@
                                             </div>
                                         </div>
                                         <div className="detail-field">
-                                            <label>메모</label>
                                             <textarea
                                                 className="memo-textarea"
                                                 value={memoValue}
@@ -2041,16 +2041,14 @@
                                                 <p style={{ color: '#7f8c8d', textAlign: 'center' }}>활동 기록이 없습니다</p>
                                             ) : (
                                                 <div className="activity-timeline">
-                                                    {customerActivities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(activity => (
+                                                    {customerActivities.sort((a, b) => new Date(b.datetime || b.createdAt) - new Date(a.datetime || a.createdAt)).map(activity => (
                                                         <div key={activity.id} className="activity-item">
                                                             <div className="activity-item-header">
                                                                 <span className="activity-item-type">
-                                                                    {activity.type === 'call' ? '전화 통화' :
-                                                                     activity.type === 'email' ? '이메일' :
-                                                                     activity.type === 'meeting' ? '미팅' : '메모'}
+                                                                    {activity.type}
                                                                 </span>
                                                                 <span className="activity-item-date">
-                                                                    {formatDateTime(activity.createdAt)}
+                                                                    {formatDateTime(activity.datetime || activity.createdAt)}
                                                                 </span>
                                                             </div>
                                                             <div className="activity-item-content">{activity.content}</div>
@@ -2553,12 +2551,10 @@
                                     <div key={activity.id} className="activity-item">
                                         <div className="activity-item-header">
                                             <span className="activity-item-type">
-                                                {activity.type === 'call' ? '전화 통화' :
-                                                 activity.type === 'email' ? '이메일' :
-                                                 activity.type === 'meeting' ? '미팅' : '메모'}
+                                                {activity.type}
                                             </span>
                                             <span className="activity-item-date">
-                                                {formatDateTime(activity.createdAt)}
+                                                {formatDateTime(activity.datetime || activity.createdAt)}
                                             </span>
                                         </div>
                                         <div className="activity-item-content">{activity.content}</div>
