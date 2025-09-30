@@ -1448,6 +1448,11 @@
                 content: ''
             });
 
+            // customer가 null인 경우 처리
+            if (!customer) {
+                return null;
+            }
+
             const handleSubmit = (e) => {
                 e.preventDefault();
                 onSave({
@@ -1515,6 +1520,11 @@
                 location: '',
                 notes: ''
             });
+
+            // customer가 null인 경우 처리
+            if (!customer) {
+                return null;
+            }
 
             const handleSubmit = (e) => {
                 e.preventDefault();
@@ -2082,7 +2092,7 @@
                     />
                 )}
 
-                {showActivityModal && (
+                {showActivityModal && contextMenuCustomer && (
                     <ActivityModal
                         customer={contextMenuCustomer}
                         onSave={(activityData) => {
@@ -2097,7 +2107,7 @@
                     />
                 )}
 
-                {showMeetingModal && (
+                {showMeetingModal && contextMenuCustomer && (
                     <MeetingModal
                         customer={contextMenuCustomer}
                         onSave={(meetingData) => {
