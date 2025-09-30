@@ -475,6 +475,41 @@
             justify-content: flex-end;
         }
 
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            min-width: 180px;
+            padding: 4px 0;
+        }
+
+        .context-menu-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .context-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .context-menu-item:hover {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .context-menu-item.danger:hover {
+            background-color: #fee;
+            color: #e74c3c;
+        }
+
         /* Table */
         .table {
             width: 100%;
@@ -1409,6 +1444,7 @@
         function ActivityModal({ customer, onSave, onClose }) {
             const [formData, setFormData] = useState({
                 type: '전화상담',
+                datetime: new Date().toISOString().slice(0, 16), // 현재 시간을 기본값으로
                 content: ''
             });
 
@@ -1441,10 +1477,19 @@
                                     <select name="type" value={formData.type} onChange={handleChange} required>
                                         <option value="전화상담">전화상담</option>
                                         <option value="문자상담">문자상담</option>
-                                        <option value="카카오톡상담">카카오톡상담</option>
                                         <option value="매물제안">매물제안</option>
                                         <option value="기타상담">기타상담</option>
                                     </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>활동일시 *</label>
+                                    <input
+                                        type="datetime-local"
+                                        name="datetime"
+                                        value={formData.datetime}
+                                        onChange={handleChange}
+                                        required
+                                    />
                                 </div>
                                 <div className="form-group">
                                     <label>활동 내용 *</label>
@@ -1527,6 +1572,38 @@
                             <button type="button" className="btn btn-secondary" onClick={onClose}>취소</button>
                             <button type="submit" form="meeting-form" className="btn btn-primary">저장</button>
                         </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Context Menu Component
+        function ContextMenu({ position, customer, onClose, onAddActivity, onAddMeeting, onEditCustomer }) {
+            useEffect(() => {
+                const handleClickOutside = () => onClose();
+                document.addEventListener('click', handleClickOutside);
+                return () => document.removeEventListener('click', handleClickOutside);
+            }, [onClose]);
+
+            if (!position || !customer) return null;
+
+            return (
+                <div
+                    className="context-menu"
+                    style={{
+                        left: position.x,
+                        top: position.y
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="context-menu-item" onClick={() => { onAddActivity(customer); onClose(); }}>
+                        📞 활동 기록 추가
+                    </div>
+                    <div className="context-menu-item" onClick={() => { onAddMeeting(customer); onClose(); }}>
+                        📅 미팅 일정 추가
+                    </div>
+                    <div className="context-menu-item" onClick={() => { onEditCustomer(customer); onClose(); }}>
+                        ✏️ 고객 정보 수정
                     </div>
                 </div>
             );
@@ -1618,6 +1695,35 @@
                     });
                     setSelectedCustomerIds([]);
                 }
+            };
+
+            // 컨텍스트 메뉴 핸들러
+            const handleContextMenu = (e, customer) => {
+                e.preventDefault();
+                setContextMenu({
+                    x: e.pageX,
+                    y: e.pageY
+                });
+                setContextMenuCustomer(customer);
+            };
+
+            const handleCloseContextMenu = () => {
+                setContextMenu(null);
+                setContextMenuCustomer(null);
+            };
+
+            const handleAddActivityFromContext = (customer) => {
+                setContextMenuCustomer(customer);
+                setShowActivityModal(true);
+            };
+
+            const handleAddMeetingFromContext = (customer) => {
+                setContextMenuCustomer(customer);
+                setShowMeetingModal(true);
+            };
+
+            const handleEditCustomerFromContext = (customer) => {
+                onOpenModal(customer);
             };
 
             const statusCounts = {
@@ -1789,6 +1895,7 @@
                                                 key={customer.id}
                                                 className={selectedCustomerId === customer.id ? 'selected' : ''}
                                                 onClick={() => onSelectCustomer(customer.id)}
+                                                onContextMenu={(e) => handleContextMenu(e, customer)}
                                             >
                                                 <td className="table-number">{index + 1}</td>
                                                 <td className="table-checkbox">
@@ -1959,6 +2066,50 @@
                         )}
                     </div>
                 </div>
+
+                {/* Context Menu */}
+                {contextMenu && contextMenuCustomer && (
+                    <ContextMenu
+                        position={contextMenu}
+                        customer={contextMenuCustomer}
+                        onClose={handleCloseContextMenu}
+                        onAddActivity={handleAddActivityFromContext}
+                        onAddMeeting={handleAddMeetingFromContext}
+                        onEditCustomer={handleEditCustomerFromContext}
+                    />
+                )}
+
+                {/* Activity Modal */}
+                {showActivityModal && contextMenuCustomer && (
+                    <ActivityModal
+                        customer={contextMenuCustomer}
+                        onSave={(activityData) => {
+                            onAddActivity(activityData);
+                            setShowActivityModal(false);
+                            setContextMenuCustomer(null);
+                        }}
+                        onClose={() => {
+                            setShowActivityModal(false);
+                            setContextMenuCustomer(null);
+                        }}
+                    />
+                )}
+
+                {/* Meeting Modal */}
+                {showMeetingModal && contextMenuCustomer && (
+                    <MeetingModal
+                        customer={contextMenuCustomer}
+                        onSave={(meetingData) => {
+                            onAddMeeting(meetingData);
+                            setShowMeetingModal(false);
+                            setContextMenuCustomer(null);
+                        }}
+                        onClose={() => {
+                            setShowMeetingModal(false);
+                            setContextMenuCustomer(null);
+                        }}
+                    />
+                )}
             );
         }
 
