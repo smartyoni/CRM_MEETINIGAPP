@@ -1286,10 +1286,43 @@
                 onSave(formData);
             };
 
+            // 전화번호 포맷팅 함수
+            const formatPhoneNumber = (value) => {
+                // 숫자만 추출
+                const numbers = value.replace(/[^\d]/g, '');
+
+                // 11자리 휴대폰 번호인 경우 (010xxxxxxxx)
+                if (numbers.length === 11 && numbers.startsWith('010')) {
+                    return numbers.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                }
+                // 10자리 일반전화인 경우 (02xxxxxxx, 031xxxxxxx 등)
+                else if (numbers.length === 10) {
+                    if (numbers.startsWith('02')) {
+                        return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+                    } else {
+                        return numbers.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+                    }
+                }
+                // 9자리 일반전화인 경우 (02xxxxxxx)
+                else if (numbers.length === 9 && numbers.startsWith('02')) {
+                    return numbers.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+                }
+
+                return value;
+            };
+
             const handleChange = (e) => {
+                const { name, value } = e.target;
+                let formattedValue = value;
+
+                // 전화번호 필드인 경우 포맷팅 적용
+                if (name === 'phone') {
+                    formattedValue = formatPhoneNumber(value);
+                }
+
                 setFormData({
                     ...formData,
-                    [e.target.name]: e.target.value
+                    [name]: formattedValue
                 });
             };
 
@@ -2052,10 +2085,43 @@
                 onSave(formData);
             };
 
+            // 전화번호 포맷팅 함수
+            const formatPhoneNumber = (value) => {
+                // 숫자만 추출
+                const numbers = value.replace(/[^\d]/g, '');
+
+                // 11자리 휴대폰 번호인 경우 (010xxxxxxxx)
+                if (numbers.length === 11 && numbers.startsWith('010')) {
+                    return numbers.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                }
+                // 10자리 일반전화인 경우 (02xxxxxxx, 031xxxxxxx 등)
+                else if (numbers.length === 10) {
+                    if (numbers.startsWith('02')) {
+                        return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+                    } else {
+                        return numbers.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+                    }
+                }
+                // 9자리 일반전화인 경우 (02xxxxxxx)
+                else if (numbers.length === 9 && numbers.startsWith('02')) {
+                    return numbers.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+                }
+
+                return value;
+            };
+
             const handleChange = (e) => {
+                const { name, value } = e.target;
+                let formattedValue = value;
+
+                // 전화번호 필드인 경우 포맷팅 적용
+                if (name === 'phone') {
+                    formattedValue = formatPhoneNumber(value);
+                }
+
                 setFormData({
                     ...formData,
-                    [e.target.name]: e.target.value
+                    [name]: formattedValue
                 });
             };
 
