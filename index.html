@@ -545,6 +545,56 @@
             color: #e74c3c;
         }
 
+        /* Meeting Detail Modal */
+        .meeting-detail-content .detail-field {
+            margin-bottom: 20px;
+        }
+
+        .meeting-detail-content .detail-field label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .meeting-detail-content .detail-field .value {
+            padding: 10px 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            color: #495057;
+            min-height: 20px;
+        }
+
+        .checklist-display {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .checklist-item-display {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .checklist-item-display:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-status {
+            font-size: 16px;
+        }
+
+        .completed-text {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
         /* Table */
         .table {
             width: 100%;
@@ -1630,6 +1680,87 @@
             );
         }
 
+        // Meeting Detail Modal Component
+        function MeetingDetailModal({ meeting, customer, onClose }) {
+            if (!meeting) {
+                return null;
+            }
+
+            const formatDateTime = (dateString) => {
+                const date = new Date(dateString);
+                return date.toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>미팅 상세 정보</h3>
+                            <button className="modal-close-btn" onClick={onClose}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="meeting-detail-content">
+                                <div className="detail-field">
+                                    <label>미팅 제목</label>
+                                    <div className="value">{meeting.title}</div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="detail-field">
+                                        <label>고객명</label>
+                                        <div className="value">{customer?.name || '-'}</div>
+                                    </div>
+                                    <div className="detail-field">
+                                        <label>일정</label>
+                                        <div className="value">{formatDateTime(meeting.date)}</div>
+                                    </div>
+                                </div>
+
+                                <div className="detail-field">
+                                    <label>장소</label>
+                                    <div className="value">{meeting.location || '장소 미정'}</div>
+                                </div>
+
+                                <div className="detail-field">
+                                    <label>메모</label>
+                                    <div className="value" style={{ whiteSpace: 'pre-wrap', minHeight: '60px' }}>
+                                        {meeting.notes || '메모 없음'}
+                                    </div>
+                                </div>
+
+                                {meeting.checklist && meeting.checklist.length > 0 && (
+                                    <div className="detail-field">
+                                        <label>체크리스트</label>
+                                        <div className="checklist-display">
+                                            {meeting.checklist.map((item, index) => (
+                                                <div key={index} className="checklist-item-display">
+                                                    <span className={`checklist-status ${item.completed ? 'completed' : 'pending'}`}>
+                                                        {item.completed ? '✅' : '⏳'}
+                                                    </span>
+                                                    <span className={item.completed ? 'completed-text' : ''}>
+                                                        {item.text}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>닫기</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         // Meeting Modal Component
         function MeetingModal({ customer, onSave, onClose }) {
             const [formData, setFormData] = useState({
@@ -1782,6 +1913,8 @@
             const [activityContextMenu, setActivityContextMenu] = useState(null);
             const [selectedActivity, setSelectedActivity] = useState(null);
             const [showEditActivityModal, setShowEditActivityModal] = useState(false);
+            const [showMeetingDetailModal, setShowMeetingDetailModal] = useState(false);
+            const [selectedMeeting, setSelectedMeeting] = useState(null);
 
             const filteredCustomers = customers.filter(customer => {
                 const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1918,6 +2051,17 @@
                         onDeleteActivity(activity.id);
                     }
                 }
+            };
+
+            // 미팅 상세 모달 핸들러
+            const handleMeetingClick = (meeting) => {
+                setSelectedMeeting(meeting);
+                setShowMeetingDetailModal(true);
+            };
+
+            const handleCloseMeetingDetailModal = () => {
+                setShowMeetingDetailModal(false);
+                setSelectedMeeting(null);
             };
 
             const statusCounts = {
@@ -2249,7 +2393,12 @@
                                                 <p style={{ color: '#7f8c8d', textAlign: 'center' }}>예정된 미팅이 없습니다</p>
                                             ) : (
                                                 customerMeetings.map(meeting => (
-                                                    <div key={meeting.id} className="list-item">
+                                                    <div
+                                                        key={meeting.id}
+                                                        className="list-item"
+                                                        onClick={() => handleMeetingClick(meeting)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
                                                         <h4>{meeting.title}</h4>
                                                         <p>{formatDateTime(meeting.date)} | {meeting.location}</p>
                                                     </div>
@@ -2328,6 +2477,14 @@
                             setShowEditActivityModal(false);
                             setSelectedActivity(null);
                         }}
+                    />
+                )}
+
+                {showMeetingDetailModal && selectedMeeting && (
+                    <MeetingDetailModal
+                        meeting={selectedMeeting}
+                        customer={customers.find(c => c.id === selectedMeeting.customerId)}
+                        onClose={handleCloseMeetingDetailModal}
                     />
                 )}
                 </React.Fragment>
