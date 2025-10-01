@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모바일 테스트</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div style="padding: 20px; text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 20px;">로딩 중...</div>
+            <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    </div>
+
+    <script>
+        console.log('=== 스크립트 시작 ===');
+        console.log('React:', typeof React);
+        console.log('ReactDOM:', typeof ReactDOM);
+
+        // Babel 없이 순수 React로 작성
+        const { useState } = React;
+
+        function TestApp() {
+            const [count, setCount] = useState(0);
+            const [message, setMessage] = useState('React가 정상 작동합니다!');
+
+            return React.createElement('div', { style: { padding: '20px' } },
+                React.createElement('div', { className: 'test-box' },
+                    React.createElement('h1', { style: { color: '#2c3e50' } }, '모바일 테스트'),
+                    React.createElement('p', { style: { fontSize: '18px', color: '#27ae60' } }, message),
+                    React.createElement('p', null, '현재 화면 크기: ', window.innerWidth, ' x ', window.innerHeight),
+                    React.createElement('p', null, 'User Agent: ', navigator.userAgent.substring(0, 50), '...')
+                ),
+                React.createElement('div', { className: 'test-box' },
+                    React.createElement('h2', null, '카운터 테스트'),
+                    React.createElement('p', { style: { fontSize: '24px', fontWeight: 'bold', color: '#3498db' } }, '카운트: ', count),
+                    React.createElement('button', {
+                        onClick: () => setCount(count + 1),
+                        style: {
+                            padding: '15px 30px',
+                            fontSize: '18px',
+                            background: '#3498db',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            marginRight: '10px'
+                        }
+                    }, '증가'),
+                    React.createElement('button', {
+                        onClick: () => setCount(0),
+                        style: {
+                            padding: '15px 30px',
+                            fontSize: '18px',
+                            background: '#e74c3c',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                        }
+                    }, '리셋')
+                ),
+                React.createElement('div', { className: 'test-box' },
+                    React.createElement('h2', null, 'localStorage 테스트'),
+                    React.createElement('button', {
+                        onClick: () => {
+                            try {
+                                localStorage.setItem('test', 'success');
+                                const value = localStorage.getItem('test');
+                                setMessage('localStorage 작동: ' + value);
+                            } catch (e) {
+                                setMessage('localStorage 에러: ' + e.message);
+                            }
+                        },
+                        style: {
+                            padding: '15px 30px',
+                            fontSize: '18px',
+                            background: '#27ae60',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                        }
+                    }, 'localStorage 테스트')
+                ),
+                React.createElement('div', { className: 'test-box' },
+                    React.createElement('h2', null, '테스트 결과'),
+                    React.createElement('ul', { style: { textAlign: 'left', lineHeight: '1.8' } },
+                        React.createElement('li', null, '✅ React 로드 완료'),
+                        React.createElement('li', null, '✅ ReactDOM 로드 완료'),
+                        React.createElement('li', null, '✅ useState 훅 작동'),
+                        React.createElement('li', null, '✅ 이벤트 핸들러 작동'),
+                        React.createElement('li', null, '✅ Babel 없이 작동 (순수 JavaScript)')
+                    )
+                )
+            );
+        }
+
+        // 앱 렌더링
+        try {
+            console.log('=== 앱 렌더링 시작 ===');
+            const rootElement = document.getElementById('root');
+            rootElement.innerHTML = '';
+            const root = ReactDOM.createRoot(rootElement);
+            root.render(React.createElement(TestApp));
+            console.log('=== 앱 렌더링 완료 ===');
+        } catch (error) {
+            console.error('렌더링 에러:', error);
+            document.getElementById('root').innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2 style="color: red;">에러 발생</h2>
+                    <p>${error.message}</p>
+                    <pre style="text-align: left; background: #f0f0f0; padding: 10px; overflow: auto;">${error.stack}</pre>
+                </div>
+            `;
+        }
+
+        // Global error handler
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Global Error:', msg);
+            document.getElementById('root').innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2 style="color: red;">전역 에러</h2>
+                    <p>${msg}</p>
+                    <p>Line: ${lineNo}, Column: ${columnNo}</p>
+                </div>
+            `;
+            return false;
+        };
+    </script>
+</body>
+</html>
