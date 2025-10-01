@@ -1506,11 +1506,23 @@
         // Data Management Hook
         const useLocalStorage = (key, initialValue) => {
             const [storedValue, setStoredValue] = useState(() => {
+                console.log(`[localStorage] ${key} 로드 시도`);
                 try {
+                    // localStorage 사용 가능 여부 체크
+                    if (typeof window.localStorage === 'undefined') {
+                        console.error('[localStorage] localStorage를 사용할 수 없습니다');
+                        return initialValue;
+                    }
+
                     const item = window.localStorage.getItem(key);
-                    return item ? JSON.parse(item) : initialValue;
+                    console.log(`[localStorage] ${key} 값:`, item ? `${item.length}자` : 'null');
+
+                    const parsed = item ? JSON.parse(item) : initialValue;
+                    console.log(`[localStorage] ${key} 파싱 완료:`, Array.isArray(parsed) ? `${parsed.length}개` : typeof parsed);
+                    return parsed;
                 } catch (error) {
-                    console.error(error);
+                    console.error(`[localStorage] ${key} 로드 에러:`, error.message);
+                    console.error('Error stack:', error.stack);
                     return initialValue;
                 }
             });
@@ -1520,8 +1532,9 @@
                     const valueToStore = value instanceof Function ? value(storedValue) : value;
                     setStoredValue(valueToStore);
                     window.localStorage.setItem(key, JSON.stringify(valueToStore));
+                    console.log(`[localStorage] ${key} 저장 완료`);
                 } catch (error) {
-                    console.error(error);
+                    console.error(`[localStorage] ${key} 저장 에러:`, error.message);
                 }
             };
 
@@ -1530,11 +1543,20 @@
 
         // Main App Component
         function App() {
+            console.log('=== App 컴포넌트 시작 ===');
+
             const [currentPage, setCurrentPage] = useState('customers');
+            console.log('currentPage state 초기화 완료');
+
             const [selectedCustomerId, setSelectedCustomerId] = useState(null);
             const [selectedMeetingId, setSelectedMeetingId] = useState(null);
+            console.log('selection state 초기화 완료');
+
             const [customers, setCustomers] = useLocalStorage('customers', []);
+            console.log('customers 로드 완료:', customers.length, '명');
+
             const [activities, setActivities] = useLocalStorage('activities', []);
+            console.log('activities 로드 완료:', activities.length, '개');
             const [meetings, setMeetings] = useLocalStorage('meetings', []);
             const [showCustomerModal, setShowCustomerModal] = useState(false);
             const [editingCustomer, setEditingCustomer] = useState(null);
@@ -1655,6 +1677,11 @@
                 }
                 closeCustomerModal();
             };
+
+            console.log('=== App 컴포넌트 렌더링 시작 ===');
+            console.log('고객 수:', customers.length);
+            console.log('활동 수:', activities.length);
+            console.log('미팅 수:', meetings.length);
 
             return (
                 <div className="app-container">
@@ -2883,6 +2910,24 @@
 
         // Customer List New Component (3-column layout)
         function CustomerListNew({ customers, activities, meetings, onOpenModal, onSelectCustomer, selectedCustomerId, onAddActivity, onUpdateCustomer, onDeleteCustomer, onAddMeeting, onUpdateActivity, onDeleteActivity, onUpdateMeeting, onExportData, onImportData }) {
+            console.log('=== CustomerListNew 컴포넌트 렌더링 ===');
+
+            // 모바일 화면 감지
+            const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+            useEffect(() => {
+                const handleResize = () => {
+                    const mobile = window.innerWidth <= 768;
+                    console.log('화면 크기 변경:', window.innerWidth, 'px, 모바일:', mobile);
+                    setIsMobile(mobile);
+                };
+
+                window.addEventListener('resize', handleResize);
+                console.log('초기 화면 크기:', window.innerWidth, 'px, 모바일:', isMobile);
+
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
             const [searchTerm, setSearchTerm] = useState('');
             const [filterStatus, setFilterStatus] = useState('all');
             const [activeTab, setActiveTab] = useState('activities');
@@ -3249,25 +3294,26 @@
                                 </div>
                             ) : (
                                 <>
-                                {/* Mobile Card View */}
-                                <div className="mobile-card-list">
-                                    {filteredCustomers.map((customer) => (
-                                        <div
-                                            key={customer.id}
-                                            className={`customer-card ${selectedCustomerId === customer.id ? 'selected' : ''}`}
-                                            onClick={() => onSelectCustomer(customer.id)}
-                                        >
-                                            <div className="customer-card-name">{customer.name}</div>
-                                            <div className="customer-card-phone">☎ {customer.phone || '-'}</div>
-                                            <div className="customer-card-info">
-                                                <span>입주희망일: {customer.moveInDate || '-'}</span>
+                                {/* Mobile Card View - JavaScript로 조건부 렌더링 */}
+                                {isMobile ? (
+                                    <div className="mobile-card-list" style={{ display: 'block' }}>
+                                        {filteredCustomers.map((customer) => (
+                                            <div
+                                                key={customer.id}
+                                                className={`customer-card ${selectedCustomerId === customer.id ? 'selected' : ''}`}
+                                                onClick={() => onSelectCustomer(customer.id)}
+                                            >
+                                                <div className="customer-card-name">{customer.name}</div>
+                                                <div className="customer-card-phone">☎ {customer.phone || '-'}</div>
+                                                <div className="customer-card-info">
+                                                    <span>입주희망일: {customer.moveInDate || '-'}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Desktop Table View */}
-                                <table className="table">
+                                        ))}
+                                    </div>
+                                ) : (
+                                    /* Desktop Table View */
+                                    <table className="table">
                                     <thead>
                                         <tr>
                                             <th className="table-number">#</th>
@@ -3315,6 +3361,7 @@
                                         ))}
                                     </tbody>
                                 </table>
+                                )}
                                 </>
                             )}
                         </div>
