@@ -4507,10 +4507,28 @@
             // 라이브러리 체크
             if (typeof React === 'undefined') {
                 console.error('React가 로드되지 않았습니다');
+                document.getElementById('root').innerHTML = '<div style="padding: 20px; color: red;">React 로드 실패</div>';
                 return;
             }
             if (typeof ReactDOM === 'undefined') {
                 console.error('ReactDOM이 로드되지 않았습니다');
+                document.getElementById('root').innerHTML = '<div style="padding: 20px; color: red;">ReactDOM 로드 실패</div>';
+                return;
+            }
+
+            // App이 정의되어 있는지 확인
+            if (typeof App === 'undefined') {
+                console.error('App 컴포넌트가 정의되지 않았습니다 - Babel 변환 실패 가능성');
+                document.getElementById('root').innerHTML = `
+                    <div style="padding: 20px; text-align: center;">
+                        <h2 style="color: #e74c3c;">앱 초기화 실패</h2>
+                        <p style="color: #555; margin: 10px 0;">JSX 변환 실패 (Babel)</p>
+                        <p style="color: #555; font-size: 12px;">이 브라우저는 Babel을 지원하지 않을 수 있습니다.</p>
+                        <button onclick="location.reload()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px;">
+                            새로고침
+                        </button>
+                    </div>
+                `;
                 return;
             }
 
@@ -4520,7 +4538,7 @@
                 rootElement.innerHTML = '';
 
                 const root = ReactDOM.createRoot(rootElement);
-                root.render(<App />);
+                root.render(React.createElement(App));
                 console.log('=== 앱 렌더링 완료 ===');
             } catch (error) {
                 console.error('앱 렌더링 에러:', error);
@@ -4529,6 +4547,7 @@
                     <div style="padding: 20px; text-align: center;">
                         <h2 style="color: #e74c3c;">앱 로딩 에러</h2>
                         <p style="color: #555; margin: 10px 0;">${error.message}</p>
+                        <p style="color: #777; font-size: 12px; margin-top: 10px;">${error.stack ? error.stack.substring(0, 200) : ''}</p>
                         <button onclick="location.reload()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px;">
                             새로고침
                         </button>
