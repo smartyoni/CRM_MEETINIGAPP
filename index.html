@@ -1072,75 +1072,6 @@
             color: #95a5a6;
         }
 
-        /* Mobile Customer Card */
-        .customer-card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .customer-card:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-color: #3498db;
-        }
-
-        .customer-card.selected {
-            background-color: #e3f2fd;
-            border-color: #2196f3;
-        }
-
-        .customer-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .customer-card-type {
-            background: #3498db;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .customer-card-date {
-            color: #7f8c8d;
-            font-size: 11px;
-        }
-
-        .customer-card-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 6px;
-        }
-
-        .customer-card-phone {
-            color: #3498db;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .customer-card-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: #555;
-        }
-
-        .mobile-filter-button {
-            display: none;
-        }
-
-        .mobile-card-list {
-            display: none;
-        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -1179,23 +1110,16 @@
 
             .table-container {
                 width: 100%;
+                overflow-x: auto;
             }
 
-            .table,
-            .table thead,
-            .table tbody,
-            .table tr,
+            .table {
+                font-size: 12px;
+            }
+
             .table th,
             .table td {
-                display: none !important;
-            }
-
-            .mobile-card-list {
-                display: block !important;
-            }
-
-            .table-content .table {
-                display: none !important;
+                padding: 8px 5px;
             }
 
             .detail-panel {
@@ -2912,22 +2836,6 @@
         function CustomerListNew({ customers, activities, meetings, onOpenModal, onSelectCustomer, selectedCustomerId, onAddActivity, onUpdateCustomer, onDeleteCustomer, onAddMeeting, onUpdateActivity, onDeleteActivity, onUpdateMeeting, onExportData, onImportData }) {
             console.log('=== CustomerListNew 컴포넌트 렌더링 ===');
 
-            // 모바일 화면 감지
-            const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-            useEffect(() => {
-                const handleResize = () => {
-                    const mobile = window.innerWidth <= 768;
-                    console.log('화면 크기 변경:', window.innerWidth, 'px, 모바일:', mobile);
-                    setIsMobile(mobile);
-                };
-
-                window.addEventListener('resize', handleResize);
-                console.log('초기 화면 크기:', window.innerWidth, 'px, 모바일:', isMobile);
-
-                return () => window.removeEventListener('resize', handleResize);
-            }, []);
-
             const [searchTerm, setSearchTerm] = useState('');
             const [filterStatus, setFilterStatus] = useState('all');
             const [activeTab, setActiveTab] = useState('activities');
@@ -3293,27 +3201,7 @@
                                     <p>새로운 고객을 추가해보세요</p>
                                 </div>
                             ) : (
-                                <>
-                                {/* Mobile Card View - JavaScript로 조건부 렌더링 */}
-                                {isMobile ? (
-                                    <div className="mobile-card-list" style={{ display: 'block' }}>
-                                        {filteredCustomers.map((customer) => (
-                                            <div
-                                                key={customer.id}
-                                                className={`customer-card ${selectedCustomerId === customer.id ? 'selected' : ''}`}
-                                                onClick={() => onSelectCustomer(customer.id)}
-                                            >
-                                                <div className="customer-card-name">{customer.name}</div>
-                                                <div className="customer-card-phone">☎ {customer.phone || '-'}</div>
-                                                <div className="customer-card-info">
-                                                    <span>입주희망일: {customer.moveInDate || '-'}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    /* Desktop Table View */
-                                    <table className="table">
+                                <table className="table">
                                     <thead>
                                         <tr>
                                             <th className="table-number">#</th>
@@ -3361,8 +3249,6 @@
                                         ))}
                                     </tbody>
                                 </table>
-                                )}
-                                </>
                             )}
                         </div>
                     </div>
