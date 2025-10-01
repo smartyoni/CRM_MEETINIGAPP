@@ -5,89 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>고객 관리 시스템</title>
 
-    <!-- React 및 Babel CDN 로딩 with fallback -->
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel Standalone - 모바일 호환 버전 -->
+    <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <script>
         console.log('=== 페이지 로딩 시작 ===');
+        console.log('React:', typeof React);
+        console.log('ReactDOM:', typeof ReactDOM);
+        console.log('Babel:', typeof Babel);
 
-        // CDN 로딩 실패 시 대체 CDN 사용
-        function loadScriptWithFallback(urls, onSuccess, onError) {
-            let currentIndex = 0;
-
-            function tryLoad() {
-                if (currentIndex >= urls.length) {
-                    console.error('모든 CDN 로딩 실패:', urls);
-                    if (onError) onError();
-                    return;
-                }
-
-                const script = document.createElement('script');
-                script.src = urls[currentIndex];
-                script.crossOrigin = 'anonymous';
-
-                script.onload = function() {
-                    console.log('CDN 로딩 성공:', urls[currentIndex]);
-                    if (onSuccess) onSuccess();
-                };
-
-                script.onerror = function() {
-                    console.warn('CDN 로딩 실패, 다음 시도:', urls[currentIndex]);
-                    currentIndex++;
-                    tryLoad();
-                };
-
-                document.head.appendChild(script);
-            }
-
-            tryLoad();
+        // Babel이 로드되면 자동으로 변환 시작
+        if (typeof Babel !== 'undefined') {
+            console.log('=== Babel 로드 확인 ===');
         }
-
-        // React CDN 목록
-        const reactCDNs = [
-            'https://unpkg.com/react@18/umd/react.production.min.js',
-            'https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js'
-        ];
-
-        // ReactDOM CDN 목록
-        const reactDOMCDNs = [
-            'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-            'https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js'
-        ];
-
-        // Babel CDN 목록
-        const babelCDNs = [
-            'https://unpkg.com/@babel/standalone/babel.min.js',
-            'https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js'
-        ];
-
-        // 순차적으로 로딩
-        loadScriptWithFallback(reactCDNs, function() {
-            loadScriptWithFallback(reactDOMCDNs, function() {
-                loadScriptWithFallback(babelCDNs, function() {
-                    console.log('=== 모든 라이브러리 로딩 완료 ===');
-                    window.CDN_LOADED = true;
-
-                    // Babel 변환 트리거
-                    setTimeout(function() {
-                        console.log('=== Babel 변환 시작 ===');
-                        if (window.Babel && window.Babel.transformScriptTags) {
-                            window.Babel.transformScriptTags();
-                            console.log('=== Babel 변환 완료 ===');
-                        } else {
-                            console.error('Babel.transformScriptTags를 사용할 수 없습니다');
-                        }
-                    }, 100);
-                }, function() {
-                    console.error('Babel 로딩 실패');
-                    document.getElementById('loading-error').style.display = 'block';
-                });
-            }, function() {
-                console.error('ReactDOM 로딩 실패');
-                document.getElementById('loading-error').style.display = 'block';
-            });
-        }, function() {
-            console.error('React 로딩 실패');
-            document.getElementById('loading-error').style.display = 'block';
-        });
     </script>
     <style>
         * {
@@ -1345,47 +1277,6 @@
         </style>
     </div>
 
-    <!-- CDN 로딩 실패 시 표시할 에러 메시지 -->
-    <div id="loading-error" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: none;">
-        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; padding: 20px; text-align: center;">
-            <h2 style="color: #e74c3c; margin-bottom: 20px;">앱 로딩 실패</h2>
-            <p style="color: #555; margin-bottom: 10px;">네트워크 연결을 확인해주세요.</p>
-            <p style="color: #555; margin-bottom: 20px;">필요한 라이브러리를 불러올 수 없습니다.</p>
-            <button onclick="location.reload()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-                새로고침
-            </button>
-        </div>
-    </div>
-
-    <script>
-        // CDN 로딩 대기 및 체크
-        let checkInterval = setInterval(function() {
-            if (window.CDN_LOADED) {
-                clearInterval(checkInterval);
-                console.log('=== 스크립트 실행 시작 ===');
-                console.log('React:', typeof React);
-                console.log('ReactDOM:', typeof ReactDOM);
-                console.log('Babel:', typeof Babel);
-
-                // React 앱 초기화 트리거
-                if (typeof React !== 'undefined' && typeof ReactDOM !== 'undefined' && typeof Babel !== 'undefined') {
-                    console.log('=== 모든 라이브러리 확인 완료 ===');
-                } else {
-                    console.error('라이브러리 로딩 실패');
-                    document.getElementById('loading-error').style.display = 'block';
-                }
-            }
-        }, 100);
-
-        // 10초 후에도 로딩 안되면 에러 표시
-        setTimeout(function() {
-            if (!window.CDN_LOADED) {
-                clearInterval(checkInterval);
-                console.error('CDN 로딩 타임아웃');
-                document.getElementById('loading-error').style.display = 'block';
-            }
-        }, 10000);
-    </script>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
@@ -4556,26 +4447,31 @@
             }
         }
 
-        // CDN 로딩 완료 후 앱 초기화
-        if (window.CDN_LOADED) {
-            initializeApp();
-        } else {
-            // CDN 로딩 완료 대기
-            let initCheckInterval = setInterval(function() {
-                if (window.CDN_LOADED) {
-                    clearInterval(initCheckInterval);
-                    initializeApp();
-                }
-            }, 100);
-
-            // 타임아웃 (15초)
-            setTimeout(function() {
-                if (!window.CDN_LOADED) {
-                    clearInterval(initCheckInterval);
-                    console.error('앱 초기화 타임아웃');
-                }
-            }, 15000);
-        }
+        // Babel이 스크립트를 변환한 후 자동으로 initializeApp이 호출됨
+        // 페이지 로드 후 약간의 지연을 두고 실행
+        setTimeout(function() {
+            if (typeof App !== 'undefined') {
+                initializeApp();
+            } else {
+                console.warn('App이 아직 정의되지 않음, 재시도 중...');
+                setTimeout(function() {
+                    if (typeof App !== 'undefined') {
+                        initializeApp();
+                    } else {
+                        console.error('App 컴포넌트를 찾을 수 없습니다');
+                        document.getElementById('root').innerHTML = `
+                            <div style="padding: 20px; text-align: center;">
+                                <h2 style="color: #e74c3c;">앱 로딩 실패</h2>
+                                <p style="color: #555; margin: 10px 0;">Babel 변환 실패 - 모바일 브라우저 비호환</p>
+                                <button onclick="location.reload()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px;">
+                                    새로고침
+                                </button>
+                            </div>
+                        `;
+                    }
+                }, 2000);
+            }
+        }, 500);
 
         // Global error handler
         window.onerror = function(msg, url, lineNo, columnNo, error) {
