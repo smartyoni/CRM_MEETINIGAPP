@@ -4582,7 +4582,11 @@
             }
 
             try {
-                const root = ReactDOM.createRoot(document.getElementById('root'));
+                // 로딩 화면 제거
+                const rootElement = document.getElementById('root');
+                rootElement.innerHTML = '';
+
+                const root = ReactDOM.createRoot(rootElement);
                 root.render(<App />);
                 console.log('=== 앱 렌더링 완료 ===');
             } catch (error) {
