@@ -65,6 +65,17 @@
                 loadScriptWithFallback(babelCDNs, function() {
                     console.log('=== 모든 라이브러리 로딩 완료 ===');
                     window.CDN_LOADED = true;
+
+                    // Babel 변환 트리거
+                    setTimeout(function() {
+                        console.log('=== Babel 변환 시작 ===');
+                        if (window.Babel && window.Babel.transformScriptTags) {
+                            window.Babel.transformScriptTags();
+                            console.log('=== Babel 변환 완료 ===');
+                        } else {
+                            console.error('Babel.transformScriptTags를 사용할 수 없습니다');
+                        }
+                    }, 100);
                 }, function() {
                     console.error('Babel 로딩 실패');
                     document.getElementById('loading-error').style.display = 'block';
