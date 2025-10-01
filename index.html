@@ -77,6 +77,37 @@
             border-right: 1px solid #ecf0f1;
             padding: 20px;
             overflow-y: auto;
+            transition: transform 0.3s ease, width 0.3s ease;
+        }
+
+        .filter-sidebar.collapsed {
+            width: 50px;
+            padding: 20px 10px;
+        }
+
+        .filter-sidebar.collapsed .filter-section h3,
+        .filter-sidebar.collapsed .filter-item,
+        .filter-sidebar.collapsed .filter-count {
+            display: none;
+        }
+
+        .filter-toggle-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-bottom: 15px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-toggle-btn:hover {
+            background: #2980b9;
         }
 
         .filter-section {
@@ -820,6 +851,10 @@
             background-color: #e3f2fd;
         }
 
+        .table td[title]:hover {
+            color: #9b59b6;
+        }
+
         .table-checkbox {
             width: 20px;
         }
@@ -955,6 +990,76 @@
             color: #95a5a6;
         }
 
+        /* Mobile Customer Card */
+        .customer-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .customer-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+
+        .customer-card.selected {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .customer-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .customer-card-type {
+            background: #3498db;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .customer-card-date {
+            color: #7f8c8d;
+            font-size: 11px;
+        }
+
+        .customer-card-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+
+        .customer-card-phone {
+            color: #3498db;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .customer-card-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .mobile-filter-button {
+            display: none;
+        }
+
+        .mobile-card-list {
+            display: none;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .app-container {
@@ -967,20 +1072,89 @@
             }
 
             .main-content {
-                padding: 15px;
+                padding: 10px;
+            }
+
+            .customer-list-container {
+                flex-direction: column;
+            }
+
+            .filter-sidebar {
+                display: none;
+            }
+
+            .filter-sidebar.mobile-open {
+                display: block;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #ecf0f1;
+                margin-bottom: 10px;
+            }
+
+            .mobile-filter-button {
+                display: inline-block;
+            }
+
+            .table-container {
+                width: 100%;
+            }
+
+            .table,
+            .table thead,
+            .table tbody,
+            .table tr,
+            .table th,
+            .table td {
+                display: none !important;
+            }
+
+            .mobile-card-list {
+                display: block !important;
+            }
+
+            .table-content .table {
+                display: none !important;
+            }
+
+            .detail-panel {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100% !important;
+                z-index: 1000;
+            }
+
+            .detail-panel.open {
+                width: 100% !important;
+            }
+
+            .detail-panel-content {
+                width: 100%;
             }
 
             .dashboard-cards {
                 grid-template-columns: 1fr;
             }
 
-            .table {
-                font-size: 12px;
+            .table-header {
+                flex-direction: column;
+                gap: 10px;
             }
 
-            .table th,
-            .table td {
-                padding: 8px;
+            .table-header h2 {
+                font-size: 18px;
+            }
+
+            .table-header > div {
+                flex-wrap: wrap;
+                width: 100%;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 13px;
             }
         }
 
@@ -1349,66 +1523,24 @@
 
             return (
                 <div className="app-container">
-                    <Sidebar
-                        currentPage={currentPage}
-                        navigateTo={navigateTo}
-                    />
-                    <div className="main-content">
-                        {currentPage === 'customers' && (
-                            <CustomerListNew
-                                customers={customers}
-                                activities={activities}
-                                meetings={meetings}
-                                onOpenModal={openCustomerModal}
-                                onSelectCustomer={setSelectedCustomerId}
-                                selectedCustomerId={selectedCustomerId}
-                                onAddActivity={addActivity}
-                                onUpdateCustomer={updateCustomer}
-                                onDeleteCustomer={deleteCustomer}
-                                onAddMeeting={addMeeting}
-                                onUpdateActivity={updateActivity}
-                                onDeleteActivity={deleteActivity}
-                                onUpdateMeeting={updateMeeting}
-                            />
-                        )}
-                        {currentPage === 'meetings' && (
-                            <MeetingList
-                                meetings={meetings}
-                                customers={customers}
-                                navigateTo={navigateTo}
-                            />
-                        )}
-                        {currentPage === 'meeting-add' && (
-                            <MeetingForm
-                                customers={customers}
-                                onSave={(meeting) => {
-                                    const newMeeting = addMeeting(meeting);
-                                    navigateTo('meeting-detail', null, newMeeting.id);
-                                }}
-                                navigateTo={navigateTo}
-                            />
-                        )}
-                        {currentPage === 'meeting-detail' && selectedMeetingId && (
-                            <MeetingDetail
-                                meeting={meetings.find(m => m.id === selectedMeetingId)}
-                                customer={customers.find(c => c.id === meetings.find(m => m.id === selectedMeetingId)?.customerId)}
-                                onUpdate={(data) => updateMeeting(selectedMeetingId, data)}
-                                onDelete={() => {
-                                    deleteMeeting(selectedMeetingId);
-                                    navigateTo('meetings');
-                                }}
-                                navigateTo={navigateTo}
-                            />
-                        )}
-                        {currentPage === 'backup' && (
-                            <BackupRestore
-                                onExport={exportData}
-                                onImport={importData}
-                                customers={customers}
-                                activities={activities}
-                                meetings={meetings}
-                            />
-                        )}
+                    <div className="main-content" style={{ marginLeft: 0 }}>
+                        <CustomerListNew
+                            customers={customers}
+                            activities={activities}
+                            meetings={meetings}
+                            onOpenModal={openCustomerModal}
+                            onSelectCustomer={setSelectedCustomerId}
+                            selectedCustomerId={selectedCustomerId}
+                            onAddActivity={addActivity}
+                            onUpdateCustomer={updateCustomer}
+                            onDeleteCustomer={deleteCustomer}
+                            onAddMeeting={addMeeting}
+                            onUpdateActivity={updateActivity}
+                            onDeleteActivity={deleteActivity}
+                            onUpdateMeeting={updateMeeting}
+                            onExportData={exportData}
+                            onImportData={importData}
+                        />
                     </div>
 
                     {/* Customer Modal */}
@@ -1427,7 +1559,6 @@
         function Sidebar({ currentPage, navigateTo }) {
             const menuItems = [
                 { id: 'customers', label: '고객' },
-                { id: 'meetings', label: '미팅' },
                 { id: 'backup', label: '데이터' }
             ];
 
@@ -1585,6 +1716,7 @@
                 moveInDate: '',
                 meetingDate: '',
                 source: '네이버광고',
+                propertyType: '매매',
                 memo: '',
                 status: '신규'
             });
@@ -1635,7 +1767,7 @@
             };
 
             return (
-                <div className="modal-overlay" onClick={onClose}>
+                <div className="modal-overlay">
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>{customer ? '고객 수정' : '새 고객 추가'}</h3>
@@ -1643,49 +1775,64 @@
                         </div>
                         <div className="modal-body">
                             <form id="customer-form" onSubmit={handleSubmit}>
-                                <div className="form-group">
-                                    <label>고객명 *</label>
-                                    <input type="text" name="name" value={formData.name} onChange={handleChange} required />
-                                </div>
-                                <div className="form-group">
-                                    <label>연락처 *</label>
-                                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="010-0000-0000" required />
-                                </div>
                                 <div className="form-row">
-                                    <div className="form-group">
-                                        <label>희망보증금 (만원) *</label>
-                                        <input type="number" name="hopefulDeposit" value={formData.hopefulDeposit} onChange={handleChange} required />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>희망월세 (만원) *</label>
-                                        <input type="number" name="hopefulMonthlyRent" value={formData.hopefulMonthlyRent} onChange={handleChange} required />
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label>선호지역 *</label>
-                                    <input type="text" name="preferredArea" value={formData.preferredArea} onChange={handleChange} required />
-                                </div>
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>입주희망일 *</label>
-                                        <input type="date" name="moveInDate" value={formData.moveInDate} onChange={handleChange} required />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>미팅일자</label>
-                                        <input type="date" name="meetingDate" value={formData.meetingDate} onChange={handleChange} />
-                                    </div>
-                                </div>
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>경로 *</label>
-                                        <select name="source" value={formData.source} onChange={handleChange} required>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label>경로</label>
+                                        <select name="source" value={formData.source} onChange={handleChange}>
                                             <option value="네이버광고">네이버광고</option>
                                             <option value="블로그">블로그</option>
                                             <option value="워킹">워킹</option>
                                             <option value="지인소개">지인소개</option>
+                                            <option value="기존고객">기존고객</option>
                                             <option value="불명">불명</option>
                                         </select>
                                     </div>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label>매물종류</label>
+                                        <select name="propertyType" value={formData.propertyType} onChange={handleChange}>
+                                            <option value="매매">매매</option>
+                                            <option value="월세">월세</option>
+                                            <option value="전세">전세</option>
+                                            <option value="상가">상가</option>
+                                            <option value="사무실">사무실</option>
+                                            <option value="지식산업센터">지식산업센터</option>
+                                            <option value="아파트">아파트</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>고객명 *</label>
+                                    <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label>연락처</label>
+                                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="010-0000-0000" />
+                                        <label style={{ marginTop: '10px' }}>입주희망일</label>
+                                        <input type="date" name="moveInDate" value={formData.moveInDate} onChange={handleChange} />
+                                    </div>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label>선호지역</label>
+                                        <textarea name="preferredArea" value={formData.preferredArea} onChange={handleChange} style={{ height: 'calc(100% - 28px)', resize: 'none' }}></textarea>
+                                    </div>
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label>희망보증금</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <input type="number" name="hopefulDeposit" value={formData.hopefulDeposit} onChange={handleChange} style={{ paddingRight: '50px' }} />
+                                            <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6c757d' }}>만원</span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label>희망월세</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <input type="number" name="hopefulMonthlyRent" value={formData.hopefulMonthlyRent} onChange={handleChange} style={{ paddingRight: '50px' }} />
+                                            <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6c757d' }}>만원</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="form-row">
                                     <div className="form-group">
                                         <label>상태</label>
                                         <select name="status" value={formData.status} onChange={handleChange}>
@@ -1742,7 +1889,7 @@
             };
 
             return (
-                <div className="modal-overlay" onClick={onClose}>
+                <div className="modal-overlay">
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>활동 추가 - {customer.name}</h3>
@@ -1813,7 +1960,7 @@
             };
 
             return (
-                <div className="modal-overlay" onClick={onClose}>
+                <div className="modal-overlay">
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>활동 내역 수정</h3>
@@ -1856,12 +2003,13 @@
         }
 
         // Meeting Detail Modal Component
-        function MeetingDetailModal({ meeting, customer, onClose }) {
+        function MeetingDetailModal({ meeting, customer, onClose, onEdit }) {
             if (!meeting) {
                 return null;
             }
 
             const formatDateTime = (dateString) => {
+                if (!dateString) return '-';
                 const date = new Date(dateString);
                 return date.toLocaleString('ko-KR', {
                     year: 'numeric',
@@ -1872,20 +2020,32 @@
                 });
             };
 
+            const formatPhoneNumber = (value) => {
+                if (!value) return '-';
+                const numbers = value.replace(/[^\d]/g, '');
+                if (numbers.length === 11 && numbers.startsWith('010')) {
+                    return numbers.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                } else if (numbers.length === 10) {
+                    if (numbers.startsWith('02')) {
+                        return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+                    } else {
+                        return numbers.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+                    }
+                } else if (numbers.length === 9 && numbers.startsWith('02')) {
+                    return numbers.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+                }
+                return value;
+            };
+
             return (
-                <div className="modal-overlay" onClick={onClose}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-overlay">
+                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
                         <div className="modal-header">
                             <h3>미팅 상세 정보</h3>
                             <button className="modal-close-btn" onClick={onClose}>×</button>
                         </div>
                         <div className="modal-body">
                             <div className="meeting-detail-content">
-                                <div className="detail-field">
-                                    <label>미팅 제목</label>
-                                    <div className="value">{meeting.title}</div>
-                                </div>
-
                                 <div className="form-row">
                                     <div className="detail-field">
                                         <label>고객명</label>
@@ -1897,30 +2057,42 @@
                                     </div>
                                 </div>
 
-                                <div className="detail-field">
-                                    <label>장소</label>
-                                    <div className="value">{meeting.location || '장소 미정'}</div>
-                                </div>
-
-                                <div className="detail-field">
-                                    <label>메모</label>
-                                    <div className="value" style={{ whiteSpace: 'pre-wrap', minHeight: '60px' }}>
-                                        {meeting.notes || '메모 없음'}
-                                    </div>
-                                </div>
-
-                                {meeting.checklist && meeting.checklist.length > 0 && (
-                                    <div className="detail-field">
-                                        <label>체크리스트</label>
-                                        <div className="checklist-display">
-                                            {meeting.checklist.map((item, index) => (
-                                                <div key={index} className="checklist-item-display">
-                                                    <span className={`checklist-status ${item.completed ? 'completed' : 'pending'}`}>
-                                                        {item.completed ? '✅' : '⏳'}
-                                                    </span>
-                                                    <span className={item.completed ? 'completed-text' : ''}>
-                                                        {item.text}
-                                                    </span>
+                                {meeting.properties && meeting.properties.length > 0 && (
+                                    <div className="detail-field" style={{ marginTop: '20px' }}>
+                                        <label>준비된 매물 ({meeting.properties.length}개)</label>
+                                        <div className="property-list" style={{ marginTop: '10px' }}>
+                                            {meeting.properties.map((property, index) => (
+                                                <div key={property.id} className="property-item">
+                                                    <div className="property-item-header">
+                                                        <div className="property-item-title">매물 #{index + 1}</div>
+                                                        <span className={`property-status ${property.status}`}>
+                                                            {property.status}
+                                                        </span>
+                                                    </div>
+                                                    <div className="property-fields">
+                                                        <div style={{ marginBottom: '10px', fontSize: '14px' }}>
+                                                            {property.visitTime && <span>방문시간 {property.visitTime}</span>}
+                                                            {property.visitTime && property.realEstate && <span> </span>}
+                                                            {property.realEstate && <span>부동산 {property.realEstate}</span>}
+                                                            {property.realEstate && property.contact && <span> </span>}
+                                                            {property.contact && <span>연락처 {formatPhoneNumber(property.contact)}</span>}
+                                                        </div>
+                                                        {property.propertyInfo && (
+                                                            <div className="property-field property-info-full">
+                                                                <label>매물정보</label>
+                                                                <div style={{
+                                                                    border: '1px solid #dee2e6',
+                                                                    borderRadius: '4px',
+                                                                    padding: '10px',
+                                                                    backgroundColor: '#fff',
+                                                                    whiteSpace: 'pre-wrap',
+                                                                    minHeight: '60px'
+                                                                }}>
+                                                                    {property.propertyInfo}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -1929,6 +2101,7 @@
                             </div>
                         </div>
                         <div className="modal-footer">
+                            <button type="button" className="btn btn-primary" onClick={() => { onClose(); onEdit(meeting); }}>수정</button>
                             <button type="button" className="btn btn-secondary" onClick={onClose}>닫기</button>
                         </div>
                     </div>
@@ -1992,7 +2165,7 @@
             };
 
             return (
-                <div className="modal-overlay" onClick={onClose}>
+                <div className="modal-overlay">
                     <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
                         <div className="modal-header">
                             <h3>미팅 매물 준비 - {meeting.title}</h3>
@@ -2119,7 +2292,7 @@
             };
 
             return (
-                <div className="modal-overlay" onClick={onClose}>
+                <div className="modal-overlay">
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>{property ? '매물 수정' : '매물 추가'}</h3>
@@ -2129,18 +2302,17 @@
                             <form id="property-form" onSubmit={handleSubmit}>
                                 <div className="form-row">
                                     <div className="form-group">
-                                        <label>방문시간 *</label>
+                                        <label>방문시간</label>
                                         <input
                                             type="time"
                                             name="visitTime"
                                             value={formData.visitTime}
                                             onChange={handleChange}
-                                            required
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label>준비상태 *</label>
-                                        <select name="status" value={formData.status} onChange={handleChange} required>
+                                        <label>준비상태</label>
+                                        <select name="status" value={formData.status} onChange={handleChange}>
                                             <option value="확인전">확인전</option>
                                             <option value="확인중">확인중</option>
                                             <option value="볼수있음">볼수있음</option>
@@ -2151,36 +2323,33 @@
                                 </div>
                                 <div className="form-row">
                                     <div className="form-group">
-                                        <label>부동산 *</label>
+                                        <label>부동산</label>
                                         <input
                                             type="text"
                                             name="realEstate"
                                             value={formData.realEstate}
                                             onChange={handleChange}
-                                            required
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label>연락처 *</label>
+                                        <label>연락처</label>
                                         <input
                                             type="tel"
                                             name="contact"
                                             value={formData.contact}
                                             onChange={handleChange}
                                             placeholder="010-0000-0000"
-                                            required
                                         />
                                     </div>
                                 </div>
                                 <div className="form-group">
-                                    <label>매물정보 *</label>
+                                    <label>매물정보</label>
                                     <textarea
                                         name="propertyInfo"
                                         value={formData.propertyInfo}
                                         onChange={handleChange}
                                         rows="4"
                                         placeholder="매물의 상세 정보를 입력하세요 (예: 아파트 84㎡, 3룸 2화장실)"
-                                        required
                                     ></textarea>
                                 </div>
                             </form>
@@ -2205,11 +2374,30 @@
                 location: '',
                 notes: ''
             });
+            const [properties, setProperties] = useState([]);
+            const [showAddForm, setShowAddForm] = useState(false);
+            const [editingProperty, setEditingProperty] = useState(null);
 
             // customer가 null인 경우 처리
             if (!customer) {
                 return null;
             }
+
+            const formatPhoneNumber = (value) => {
+                const numbers = value.replace(/[^\d]/g, '');
+                if (numbers.length === 11 && numbers.startsWith('010')) {
+                    return numbers.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                } else if (numbers.length === 10) {
+                    if (numbers.startsWith('02')) {
+                        return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+                    } else {
+                        return numbers.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+                    }
+                } else if (numbers.length === 9 && numbers.startsWith('02')) {
+                    return numbers.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+                }
+                return value;
+            };
 
             const handleSubmit = (e) => {
                 e.preventDefault();
@@ -2219,7 +2407,8 @@
                     date: meetingDateTime,
                     location: formData.location,
                     notes: formData.notes,
-                    customerId: customer.id
+                    customerId: customer.id,
+                    properties: properties
                 });
             };
 
@@ -2230,43 +2419,241 @@
                 });
             };
 
+            const handleAddProperty = (propertyData) => {
+                const newProperty = {
+                    ...propertyData,
+                    id: Date.now().toString()
+                };
+                setProperties([...properties, newProperty]);
+                setShowAddForm(false);
+            };
+
+            const handleUpdateProperty = (propertyData) => {
+                setProperties(properties.map(p =>
+                    p.id === propertyData.id ? propertyData : p
+                ));
+                setEditingProperty(null);
+            };
+
+            const handleDeleteProperty = (propertyId) => {
+                if (window.confirm('이 매물을 삭제하시겠습니까?')) {
+                    setProperties(properties.filter(p => p.id !== propertyId));
+                }
+            };
+
             return (
-                <div className="modal-overlay" onClick={onClose}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-overlay">
+                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
                         <div className="modal-header">
                             <h3>미팅 추가 - {customer.name}</h3>
                             <button className="modal-close-btn" onClick={onClose}>×</button>
                         </div>
                         <div className="modal-body">
                             <form id="meeting-form" onSubmit={handleSubmit}>
-                                <div className="form-group">
-                                    <label>미팅 제목 *</label>
-                                    <input type="text" name="title" value={formData.title} onChange={handleChange} required />
-                                </div>
                                 <div className="form-row">
                                     <div className="form-group">
-                                        <label>미팅 날짜 *</label>
-                                        <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+                                        <label>미팅 날짜</label>
+                                        <input type="date" name="date" value={formData.date} onChange={handleChange} />
                                     </div>
                                     <div className="form-group">
-                                        <label>미팅 시간 *</label>
-                                        <input type="time" name="time" value={formData.time} onChange={handleChange} required />
+                                        <label>미팅 시간</label>
+                                        <input type="time" name="time" value={formData.time} onChange={handleChange} />
                                     </div>
                                 </div>
-                                <div className="form-group">
-                                    <label>미팅 장소</label>
-                                    <input type="text" name="location" value={formData.location} onChange={handleChange} />
-                                </div>
-                                <div className="form-group">
-                                    <label>메모</label>
-                                    <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3"></textarea>
-                                </div>
                             </form>
+
+                            <div className="property-prep-content" style={{ marginTop: '20px' }}>
+                                <h4 style={{ marginBottom: '15px' }}>매물 준비</h4>
+                                <div className="property-list">
+                                    {properties.length === 0 ? (
+                                        <p style={{ textAlign: 'center', color: '#6c757d', margin: '20px 0' }}>
+                                            준비된 매물이 없습니다.
+                                        </p>
+                                    ) : (
+                                        properties.map((property, index) => (
+                                            <PropertyItem
+                                                key={property.id}
+                                                property={property}
+                                                index={index}
+                                                onEdit={() => setEditingProperty(property)}
+                                                onDelete={() => handleDeleteProperty(property.id)}
+                                                formatPhoneNumber={formatPhoneNumber}
+                                            />
+                                        ))
+                                    )}
+                                </div>
+
+                                <button className="add-property-btn" onClick={() => setShowAddForm(true)} type="button">
+                                    + 매물 추가
+                                </button>
+                            </div>
                         </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" onClick={onClose}>취소</button>
                             <button type="submit" form="meeting-form" className="btn btn-primary">저장</button>
                         </div>
+
+                        {showAddForm && (
+                            <PropertyForm
+                                onSave={handleAddProperty}
+                                onClose={() => setShowAddForm(false)}
+                                formatPhoneNumber={formatPhoneNumber}
+                            />
+                        )}
+
+                        {editingProperty && (
+                            <PropertyForm
+                                property={editingProperty}
+                                onSave={handleUpdateProperty}
+                                onClose={() => setEditingProperty(null)}
+                                formatPhoneNumber={formatPhoneNumber}
+                            />
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Meeting Edit Modal Component
+        function MeetingEditModal({ meeting, customer, onSave, onClose }) {
+            const meetingDate = meeting.date ? new Date(meeting.date) : null;
+            const [formData, setFormData] = useState({
+                date: meetingDate ? meetingDate.toISOString().split('T')[0] : '',
+                time: meetingDate ? meetingDate.toTimeString().substring(0, 5) : ''
+            });
+            const [properties, setProperties] = useState(meeting?.properties || []);
+            const [showAddForm, setShowAddForm] = useState(false);
+            const [editingProperty, setEditingProperty] = useState(null);
+
+            if (!customer || !meeting) {
+                return null;
+            }
+
+            const formatPhoneNumber = (value) => {
+                const numbers = value.replace(/[^\d]/g, '');
+                if (numbers.length === 11 && numbers.startsWith('010')) {
+                    return numbers.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                } else if (numbers.length === 10) {
+                    if (numbers.startsWith('02')) {
+                        return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+                    } else {
+                        return numbers.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+                    }
+                } else if (numbers.length === 9 && numbers.startsWith('02')) {
+                    return numbers.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+                }
+                return value;
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const meetingDateTime = formData.date && formData.time
+                    ? `${formData.date}T${formData.time}:00`
+                    : meeting.date;
+                onSave({
+                    ...meeting,
+                    date: meetingDateTime,
+                    properties: properties
+                });
+            };
+
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+
+            const handleAddProperty = (propertyData) => {
+                const newProperty = {
+                    ...propertyData,
+                    id: Date.now().toString()
+                };
+                setProperties([...properties, newProperty]);
+                setShowAddForm(false);
+            };
+
+            const handleUpdateProperty = (propertyData) => {
+                setProperties(properties.map(p =>
+                    p.id === propertyData.id ? propertyData : p
+                ));
+                setEditingProperty(null);
+            };
+
+            const handleDeleteProperty = (propertyId) => {
+                if (window.confirm('이 매물을 삭제하시겠습니까?')) {
+                    setProperties(properties.filter(p => p.id !== propertyId));
+                }
+            };
+
+            return (
+                <div className="modal-overlay">
+                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+                        <div className="modal-header">
+                            <h3>미팅 수정 - {customer.name}</h3>
+                            <button className="modal-close-btn" onClick={onClose}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <form id="meeting-edit-form" onSubmit={handleSubmit}>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>미팅 날짜</label>
+                                        <input type="date" name="date" value={formData.date} onChange={handleChange} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>미팅 시간</label>
+                                        <input type="time" name="time" value={formData.time} onChange={handleChange} />
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div className="property-prep-content" style={{ marginTop: '20px' }}>
+                                <h4 style={{ marginBottom: '15px' }}>매물 준비</h4>
+                                <div className="property-list">
+                                    {properties.length === 0 ? (
+                                        <p style={{ textAlign: 'center', color: '#6c757d', margin: '20px 0' }}>
+                                            준비된 매물이 없습니다.
+                                        </p>
+                                    ) : (
+                                        properties.map((property, index) => (
+                                            <PropertyItem
+                                                key={property.id}
+                                                property={property}
+                                                index={index}
+                                                onEdit={() => setEditingProperty(property)}
+                                                onDelete={() => handleDeleteProperty(property.id)}
+                                                formatPhoneNumber={formatPhoneNumber}
+                                            />
+                                        ))
+                                    )}
+                                </div>
+
+                                <button className="add-property-btn" onClick={() => setShowAddForm(true)} type="button">
+                                    + 매물 추가
+                                </button>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>취소</button>
+                            <button type="submit" form="meeting-edit-form" className="btn btn-primary">저장</button>
+                        </div>
+
+                        {showAddForm && (
+                            <PropertyForm
+                                onSave={handleAddProperty}
+                                onClose={() => setShowAddForm(false)}
+                                formatPhoneNumber={formatPhoneNumber}
+                            />
+                        )}
+
+                        {editingProperty && (
+                            <PropertyForm
+                                property={editingProperty}
+                                onSave={handleUpdateProperty}
+                                onClose={() => setEditingProperty(null)}
+                                formatPhoneNumber={formatPhoneNumber}
+                            />
+                        )}
                     </div>
                 </div>
             );
@@ -2360,10 +2747,11 @@
         }
 
         // Customer List New Component (3-column layout)
-        function CustomerListNew({ customers, activities, meetings, onOpenModal, onSelectCustomer, selectedCustomerId, onAddActivity, onUpdateCustomer, onDeleteCustomer, onAddMeeting, onUpdateActivity, onDeleteActivity, onUpdateMeeting }) {
+        function CustomerListNew({ customers, activities, meetings, onOpenModal, onSelectCustomer, selectedCustomerId, onAddActivity, onUpdateCustomer, onDeleteCustomer, onAddMeeting, onUpdateActivity, onDeleteActivity, onUpdateMeeting, onExportData, onImportData }) {
             const [searchTerm, setSearchTerm] = useState('');
             const [filterStatus, setFilterStatus] = useState('all');
             const [activeTab, setActiveTab] = useState('activities');
+            const fileInputRef = React.useRef(null);
             const [memoValue, setMemoValue] = useState('');
             const [selectedCustomerIds, setSelectedCustomerIds] = useState([]);
             const [showStatusChangeDropdown, setShowStatusChangeDropdown] = useState(false);
@@ -2379,6 +2767,10 @@
             const [meetingContextMenu, setMeetingContextMenu] = useState(null);
             const [showPropertyPrepModal, setShowPropertyPrepModal] = useState(false);
             const [selectedMeetingForProperty, setSelectedMeetingForProperty] = useState(null);
+            const [showEditMeetingModal, setShowEditMeetingModal] = useState(false);
+            const [editingMeeting, setEditingMeeting] = useState(null);
+            const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+            const [filterSidebarCollapsed, setFilterSidebarCollapsed] = useState(false);
 
             const filteredCustomers = customers.filter(customer => {
                 const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -2558,7 +2950,13 @@
                 <React.Fragment>
                 <div className="customer-list-container">
                     {/* Left Filter Sidebar */}
-                    <div className="filter-sidebar">
+                    <div className={`filter-sidebar ${mobileFilterOpen ? 'mobile-open' : ''} ${filterSidebarCollapsed ? 'collapsed' : ''}`}>
+                        <button
+                            className="filter-toggle-btn"
+                            onClick={() => setFilterSidebarCollapsed(!filterSidebarCollapsed)}
+                        >
+                            {filterSidebarCollapsed ? '☰' : '✕'}
+                        </button>
                         <div className="filter-section">
                             <h3>상태</h3>
                             <div
@@ -2604,6 +3002,12 @@
                         <div className="table-header">
                             <h2>고객 목록</h2>
                             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                <button
+                                    className="btn btn-secondary mobile-filter-button"
+                                    onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+                                >
+                                    필터 {mobileFilterOpen ? '▲' : '▼'}
+                                </button>
                                 {selectedCustomerIds.length > 0 && (
                                     <>
                                         <div style={{ position: 'relative' }}>
@@ -2672,6 +3076,25 @@
                                 <button className="btn btn-primary" onClick={() => onOpenModal()}>
                                     + 고객 추가
                                 </button>
+                                <button className="btn btn-secondary" onClick={onExportData}>
+                                    백업
+                                </button>
+                                <button className="btn btn-secondary" onClick={() => fileInputRef.current.click()}>
+                                    복원
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    accept=".json"
+                                    style={{ display: 'none' }}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            onImportData(file);
+                                            e.target.value = '';
+                                        }
+                                    }}
+                                />
                             </div>
                         </div>
                         <div className="table-content">
@@ -2690,6 +3113,25 @@
                                     <p>새로운 고객을 추가해보세요</p>
                                 </div>
                             ) : (
+                                <>
+                                {/* Mobile Card View */}
+                                <div className="mobile-card-list">
+                                    {filteredCustomers.map((customer) => (
+                                        <div
+                                            key={customer.id}
+                                            className={`customer-card ${selectedCustomerId === customer.id ? 'selected' : ''}`}
+                                            onClick={() => onSelectCustomer(customer.id)}
+                                        >
+                                            <div className="customer-card-name">{customer.name}</div>
+                                            <div className="customer-card-phone">☎ {customer.phone || '-'}</div>
+                                            <div className="customer-card-info">
+                                                <span>입주희망일: {customer.moveInDate || '-'}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Desktop Table View */}
                                 <table className="table">
                                     <thead>
                                         <tr>
@@ -2701,13 +3143,13 @@
                                                     onChange={handleSelectAll}
                                                 />
                                             </th>
+                                            <th>매물종류</th>
                                             <th>고객명</th>
                                             <th>연락처</th>
                                             <th>희망보증금</th>
                                             <th>희망월세</th>
                                             <th>선호지역</th>
                                             <th>입주희망일</th>
-                                            <th>미팅일자</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2727,17 +3169,18 @@
                                                         onClick={(e) => e.stopPropagation()}
                                                     />
                                                 </td>
-                                                <td>{customer.name}</td>
-                                                <td>{customer.phone}</td>
+                                                <td>{customer.propertyType || '-'}</td>
+                                                <td title={customer.name} style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{customer.name}</td>
+                                                <td><a href={`sms:${customer.phone}`}>{customer.phone}</a></td>
                                                 <td>{customer.hopefulDeposit ? `${customer.hopefulDeposit}만원` : '-'}</td>
                                                 <td>{customer.hopefulMonthlyRent ? `${customer.hopefulMonthlyRent}만원` : '-'}</td>
-                                                <td>{customer.preferredArea || '-'}</td>
+                                                <td title={customer.preferredArea || '-'} style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{customer.preferredArea || '-'}</td>
                                                 <td>{customer.moveInDate || '-'}</td>
-                                                <td>{customer.meetingDate || '-'}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
+                                </>
                             )}
                         </div>
                     </div>
@@ -2747,7 +3190,7 @@
                         {selectedCustomer && (
                             <div className="detail-panel-content">
                                 <div className="detail-panel-header">
-                                    <h3>고객 상세</h3>
+                                    <h3>고객 상세 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#e74c3c', marginLeft: '10px' }}>접수일자: {formatDate(selectedCustomer.createdAt)}</span></h3>
                                     <div style={{ display: 'flex', gap: '10px' }}>
                                         <button
                                             className="btn btn-primary"
@@ -2764,6 +3207,29 @@
                                     <div className="detail-info-section">
                                         <div className="detail-field-row-3">
                                             <div className="detail-field">
+                                                <label>경로</label>
+                                                <div className="value">{selectedCustomer.source || '-'}</div>
+                                            </div>
+                                            <div className="detail-field">
+                                                <label>매물종류</label>
+                                                <div className="value">{selectedCustomer.propertyType || '-'}</div>
+                                            </div>
+                                            <div className="detail-field">
+                                                <label>상태</label>
+                                                <div className="value">
+                                                    <span className={`badge ${
+                                                        selectedCustomer.status === '계약완료' ? 'badge-success' :
+                                                        selectedCustomer.status === '실패' ? 'badge-danger' :
+                                                        selectedCustomer.status === '진행중' ? 'badge-primary' :
+                                                        'badge-warning'
+                                                    }`}>
+                                                        {selectedCustomer.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="detail-field-row-3">
+                                            <div className="detail-field">
                                                 <label>고객명</label>
                                                 <div className="value">{selectedCustomer.name}</div>
                                             </div>
@@ -2772,8 +3238,8 @@
                                                 <div className="value">{selectedCustomer.phone}</div>
                                             </div>
                                             <div className="detail-field">
-                                                <label>경로</label>
-                                                <div className="value">{selectedCustomer.source || '-'}</div>
+                                                <label>입주희망일</label>
+                                                <div className="value">{selectedCustomer.moveInDate || '-'}</div>
                                             </div>
                                         </div>
                                         <div className="detail-field-row-3">
@@ -2788,29 +3254,6 @@
                                             <div className="detail-field">
                                                 <label>선호지역</label>
                                                 <div className="value">{selectedCustomer.preferredArea || '-'}</div>
-                                            </div>
-                                        </div>
-                                        <div className="detail-field-row-3">
-                                            <div className="detail-field">
-                                                <label>입주희망일</label>
-                                                <div className="value">{selectedCustomer.moveInDate || '-'}</div>
-                                            </div>
-                                            <div className="detail-field">
-                                                <label>미팅일자</label>
-                                                <div className="value">{selectedCustomer.meetingDate || '-'}</div>
-                                            </div>
-                                            <div className="detail-field">
-                                                <label>상태</label>
-                                                <div className="value">
-                                                    <span className={`badge ${
-                                                        selectedCustomer.status === '계약완료' ? 'badge-success' :
-                                                        selectedCustomer.status === '실패' ? 'badge-danger' :
-                                                        selectedCustomer.status === '진행중' ? 'badge-primary' :
-                                                        'badge-warning'
-                                                    }`}>
-                                                        {selectedCustomer.status}
-                                                    </span>
-                                                </div>
                                             </div>
                                         </div>
                                         <div className="detail-field">
@@ -2835,14 +3278,26 @@
                                         className={`detail-tab ${activeTab === 'meetings' ? 'active' : ''}`}
                                         onClick={() => setActiveTab('meetings')}
                                     >
-                                        미팅
+                                        미팅 내역
                                     </div>
                                 </div>
 
                                 <div className="detail-tab-content">
                                     {activeTab === 'activities' && (
                                         <div>
-                                            <h4 style={{ marginBottom: '15px' }}>활동 내역 ({customerActivities.length})</h4>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                                <h4 style={{ margin: 0 }}>활동 내역 ({customerActivities.length})</h4>
+                                                <button
+                                                    className="btn btn-primary btn-small"
+                                                    style={{ padding: '6px 12px', fontSize: '14px' }}
+                                                    onClick={() => {
+                                                        setContextMenuCustomer(selectedCustomer);
+                                                        setShowActivityModal(true);
+                                                    }}
+                                                >
+                                                    + 활동 추가
+                                                </button>
+                                            </div>
                                             {customerActivities.length === 0 ? (
                                                 <p style={{ color: '#7f8c8d', textAlign: 'center' }}>활동 기록이 없습니다</p>
                                             ) : (
@@ -2870,7 +3325,19 @@
                                     )}
                                     {activeTab === 'meetings' && (
                                         <div>
-                                            <h4 style={{ marginBottom: '15px' }}>미팅 ({customerMeetings.length})</h4>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                                <h4 style={{ margin: 0 }}>미팅 내역 ({customerMeetings.length})</h4>
+                                                <button
+                                                    className="btn btn-primary btn-small"
+                                                    style={{ padding: '6px 12px', fontSize: '14px' }}
+                                                    onClick={() => {
+                                                        setContextMenuCustomer(selectedCustomer);
+                                                        setShowMeetingModal(true);
+                                                    }}
+                                                >
+                                                    + 미팅 추가
+                                                </button>
+                                            </div>
                                             {customerMeetings.length === 0 ? (
                                                 <p style={{ color: '#7f8c8d', textAlign: 'center' }}>예정된 미팅이 없습니다</p>
                                             ) : (
@@ -2879,6 +3346,10 @@
                                                         key={meeting.id}
                                                         className="list-item"
                                                         onClick={() => handleMeetingClick(meeting)}
+                                                        onContextMenu={(e) => {
+                                                            e.preventDefault();
+                                                            handleMeetingContextMenu(e, meeting);
+                                                        }}
                                                         style={{ cursor: 'pointer' }}
                                                     >
                                                         <h4>{meeting.title}</h4>
@@ -2991,6 +3462,26 @@
                         meeting={selectedMeeting}
                         customer={customers.find(c => c.id === selectedMeeting.customerId)}
                         onClose={handleCloseMeetingDetailModal}
+                        onEdit={(meeting) => {
+                            setEditingMeeting(meeting);
+                            setShowEditMeetingModal(true);
+                        }}
+                    />
+                )}
+
+                {showEditMeetingModal && editingMeeting && (
+                    <MeetingEditModal
+                        meeting={editingMeeting}
+                        customer={customers.find(c => c.id === editingMeeting.customerId)}
+                        onSave={(updatedMeeting) => {
+                            onUpdateMeeting(editingMeeting.id, updatedMeeting);
+                            setShowEditMeetingModal(false);
+                            setEditingMeeting(null);
+                        }}
+                        onClose={() => {
+                            setShowEditMeetingModal(false);
+                            setEditingMeeting(null);
+                        }}
                     />
                 )}
                 </React.Fragment>
@@ -3306,7 +3797,7 @@
             return (
                 <div>
                     <div className="page-header">
-                        <h2>고객 상세 정보</h2>
+                        <h2>고객 상세 정보 <span style={{ fontSize: '16px', fontWeight: 'normal', color: '#7f8c8d', marginLeft: '15px' }}>접수일자: {formatDate(customer.createdAt)}</span></h2>
                         <p>{customer.name}님의 정보와 활동 내역</p>
                     </div>
 
@@ -3314,7 +3805,6 @@
                         <div className="detail-header">
                             <div>
                                 <h2>{customer.name}</h2>
-                                <p style={{ color: '#7f8c8d' }}>{customer.company} {customer.position && `- ${customer.position}`}</p>
                             </div>
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <button
